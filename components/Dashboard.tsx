@@ -237,7 +237,86 @@ const performSearch = async (formData: SearchFormData): Promise<SearchResult[]> 
   }
 };
 
+// Share voter details function
+const shareVoterDetails = (voter: VoterData & { id: string }) => {
+  const shareText = `मतदार माहिती:
+  
+📋 पूर्ण नाव: ${voter.full_name}
+👤 पहिले नाव: ${voter.name_parts.first}
+👨‍👩‍👧‍👦 मधले नाव: ${voter.name_parts.middle}
+🏠 आडनाव: ${voter.name_parts.last}
+⚧️ लिंग: ${voter.gender}
+🎂 वय: ${voter.age} वर्ष
+🆔 EPIC ID: ${voter.id}
+📍 संदर्भ: ${voter.reference}
+
+🔍 इंदुरी मतदार संच - मतदार शोध प्रणाली`;
+
+  // Check if Web Share API is available (mobile devices)
+  if (navigator.share) {
+    navigator.share({
+      title: `मतदार माहिती: ${voter.full_name}`,
+      text: shareText,
+      url: window.location.href,
+    })
+    .then(() => console.log('शेयर यशस्वी!'))
+    .catch((error) => {
+      console.error('शेयर त्रुटी:', error);
+      // Fallback to copying to clipboard
+      copyToClipboard(shareText);
+    });
+  } else {
+    // Fallback for desktop - copy to clipboard
+    copyToClipboard(shareText);
+  }
+};
+
+// Copy to clipboard function
+const copyToClipboard = (text: string) => {
+  navigator.clipboard.writeText(text)
+    .then(() => {
+      alert('माहिती क्लिपबोर्डवर कॉपी केली! आता आपण ती कोणत्याही ऍपमध्ये पेस्ट करू शकता.');
+    })
+    .catch(err => {
+      console.error('क्लिपबोर्ड कॉपी त्रुटी:', err);
+      alert('क्लिपबोर्डवर कॉपी करण्यात त्रुटी आली. कृपया मॅन्युअली कॉपी करा.');
+    });
+};
+
+// Share via specific app
+const shareViaApp = (voter: VoterData & { id: string }, app: 'whatsapp' | 'telegram' | 'sms' | 'email') => {
+  const voterInfo = `मतदार माहिती:
+  
+नाव: ${voter.full_name}
+पहिले नाव: ${voter.name_parts.first}
+मधले नाव: ${voter.name_parts.middle}
+आडनाव: ${voter.name_parts.last}
+लिंग: ${voter.gender}
+वय: ${voter.age} वर्ष
+EPIC ID: ${voter.id}
+संदर्भ: ${voter.reference}`;
+
+  const encodedText = encodeURIComponent(voterInfo);
+  
+  switch (app) {
+    case 'whatsapp':
+      window.open(`https://wa.me/?text=${encodedText}`, '_blank');
+      break;
+    case 'telegram':
+      window.open(`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodedText}`, '_blank');
+      break;
+    case 'sms':
+      window.open(`sms:?body=${encodedText}`, '_blank');
+      break;
+    case 'email':
+      window.open(`mailto:?subject=मतदार माहिती: ${voter.full_name}&body=${encodedText}`, '_blank');
+      break;
+  }
+};
+
 const VoterModal: React.FC<VoterModalProps> = ({ voter, onClose }) => {
+  const [showShareOptions, setShowShareOptions] = useState(false);
+
   return (
     <div className="fixed inset-0 bg-semi-transparent bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -245,7 +324,7 @@ const VoterModal: React.FC<VoterModalProps> = ({ voter, onClose }) => {
           <div className="flex justify-between items-center mb-6">
             <div>
               <h2 className="text-2xl font-bold text-gray-800">{voter.full_name}</h2>
-              <p className="text-gray-600 text-sm font-mono">Voter ID: {voter.id}</p>
+              <p className="text-gray-600 text-sm font-mono">EPIC: {voter.id}</p>
             </div>
             <button
               onClick={onClose}
@@ -258,29 +337,29 @@ const VoterModal: React.FC<VoterModalProps> = ({ voter, onClose }) => {
           <div className="space-y-4">
             <div className="grid grid-cols-3 gap-4">
               <div className="col-span-3">
-                <span className="font-medium text-gray-700 block mb-1">Full Name:</span>
+                <span className="font-medium text-gray-700 block mb-1">पूर्ण नाव:</span>
                 <span className="text-gray-900 text-lg">{voter.full_name}</span>
               </div>
 
               <div>
-                <span className="font-medium text-gray-700 block mb-1">First Name:</span>
+                <span className="font-medium text-gray-700 block mb-1">पहिले नाव:</span>
                 <span className="text-gray-900">{voter.name_parts.first}</span>
               </div>
 
               <div>
-                <span className="font-medium text-gray-700 block mb-1">Middle Name:</span>
+                <span className="font-medium text-gray-700 block mb-1">मधले नाव:</span>
                 <span className="text-gray-900">{voter.name_parts.middle}</span>
               </div>
 
               <div>
-                <span className="font-medium text-gray-700 block mb-1">Last Name:</span>
+                <span className="font-medium text-gray-700 block mb-1">आडनाव:</span>
                 <span className="text-gray-900">{voter.name_parts.last}</span>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <span className="font-medium text-gray-700 block mb-1">Gender:</span>
+                <span className="font-medium text-gray-700 block mb-1">लिंग:</span>
                 <span className={`px-3 py-1 rounded-full text-sm ${voter.gender === 'पुरुष'
                     ? 'bg-blue-100 text-blue-800'
                     : 'bg-pink-100 text-pink-800'
@@ -290,29 +369,127 @@ const VoterModal: React.FC<VoterModalProps> = ({ voter, onClose }) => {
               </div>
 
               <div>
-                <span className="font-medium text-gray-700 block mb-1">Age:</span>
+                <span className="font-medium text-gray-700 block mb-1">वय:</span>
                 <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                  {voter.age} years
+                  {voter.age} वर्ष
                 </span>
               </div>
             </div>
 
             <div>
-              <span className="font-medium text-gray-700 block mb-1">Reference:</span>
+              <span className="font-medium text-gray-700 block mb-1">संदर्भ:</span>
               <span className="text-gray-900 bg-gray-50 p-3 rounded-lg block">
                 {voter.reference}
               </span>
             </div>
           </div>
+
+          {/* Share Section */}
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-medium text-gray-700">माहिती शेअर करा</h3>
+              <button
+                onClick={() => setShowShareOptions(!showShareOptions)}
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
+                {showShareOptions ? 'शेअर ऑप्शन्स लपवा' : 'शेअर ऑप्शन्स दाखवा'}
+              </button>
+            </div>
+
+            {/* Main Share Button */}
+            <button
+              onClick={() => shareVoterDetails(voter)}
+              className="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2 mb-3"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M15 8a3 3 0 10-2.477-2.477 5 5 0 10-4.026 4.026 3 3 0 102.477 2.477 5 5 0 104.026-4.026A3 3 0 0015 8zm-6 6a3 3 0 110-6 3 3 0 010 6zm-1-3a1 1 0 112 0 1 1 0 01-2 0z" clipRule="evenodd" />
+              </svg>
+              माहिती शेअर करा
+            </button>
+
+            {/* App-specific Share Options */}
+            {showShareOptions && (
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <button
+                  onClick={() => shareViaApp(voter, 'whatsapp')}
+                  className="py-2 px-3 bg-green-100 text-green-800 rounded-lg hover:bg-green-200 transition-colors flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347zm-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.76.982.998-3.675-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.897 6.994c-.004 5.45-4.438 9.88-9.888 9.88zm8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.333.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.333 11.893-11.893 0-3.18-1.24-6.162-3.495-8.411z" />
+                  </svg>
+                  WhatsApp
+                </button>
+
+                <button
+                  onClick={() => shareViaApp(voter, 'telegram')}
+                  className="py-2 px-3 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.139c-.203-.196-.528-.206-.76-.047l-2.5 1.855-1.5 3.5-2.5 4.5c-.07.131-.082.292-.034.436.048.143.157.254.305.308l.5.17c.154.052.324.034.462-.048l2-1.5 1.5-2.5 4-3 2.5-1.5c.131-.079.223-.212.25-.366.026-.154-.015-.314-.112-.438l-.5-.5zm-5.125 6.99l1.25-2.875 4.375-3.25-4.375 3.25-1.25 2.875z" />
+                  </svg>
+                  Telegram
+                </button>
+
+                <button
+                  onClick={() => shareViaApp(voter, 'sms')}
+                  className="py-2 px-3 bg-purple-100 text-purple-800 rounded-lg hover:bg-purple-200 transition-colors flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clipRule="evenodd" />
+                  </svg>
+                  SMS
+                </button>
+
+                <button
+                  onClick={() => shareViaApp(voter, 'email')}
+                  className="py-2 px-3 bg-red-100 text-red-800 rounded-lg hover:bg-red-200 transition-colors flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                  </svg>
+                  Email
+                </button>
+              </div>
+            )}
+
+            {/* Copy to Clipboard Option */}
+            <button
+              onClick={() => {
+                const voterInfo = `मतदार माहिती:
+नाव: ${voter.full_name}
+पहिले नाव: ${voter.name_parts.first}
+मधले नाव: ${voter.name_parts.middle}
+आडनाव: ${voter.name_parts.last}
+लिंग: ${voter.gender}
+वय: ${voter.age} वर्ष
+EPIC ID: ${voter.id}
+संदर्भ: ${voter.reference}`;
+                copyToClipboard(voterInfo);
+              }}
+              className="w-full py-2 px-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              क्लिपबोर्डवर कॉपी करा
+            </button>
+          </div>
         </div>
 
         <div className="bg-gray-50 px-6 py-4 sticky bottom-0">
-          <div className="flex justify-end">
+          <div className="flex justify-between">
             <button
               onClick={onClose}
+              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              बंद करा
+            </button>
+            <button
+              onClick={() => shareVoterDetails(voter)}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
-              Close
+              शेअर करा
             </button>
           </div>
         </div>
@@ -339,22 +516,55 @@ const Dashboard: React.FC = () => {
     searchMethod: ''
   });
 
-  // Add this to your state declarations
   const [activeTab, setActiveTab] = useState<'name' | 'epic'>('name');
+  const [transliterationHints, setTransliterationHints] = useState({
+    firstName: '',
+    middleName: '',
+    lastName: ''
+  });
 
   const handleInputChange = useCallback((field: keyof SearchFormData, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+
+    // Show transliteration hint for English text
+    if (value && !containsMarathi(value)) {
+      const transliterated = transliterateToMarathi(value);
+      if (transliterated !== value) {
+        setTransliterationHints(prev => ({
+          ...prev,
+          [field]: `${transliterated}`
+        }));
+      } else {
+        setTransliterationHints(prev => ({
+          ...prev,
+          [field]: ''
+        }));
+      }
+    } else {
+      setTransliterationHints(prev => ({
+        ...prev,
+        [field]: ''
+      }));
+    }
   }, []);
 
   const handleSearch = useCallback(async () => {
     const { firstName, middleName, lastName, voterId } = formData;
 
-    if (!firstName && !middleName && !lastName && !voterId) {
-      setSearchResults([]);
-      setSearchPerformed(false);
+    // For name search: require all three fields
+    if (activeTab === 'name') {
+      if (!firstName || !middleName || !lastName) {
+        alert('कृपया तिन्ही नावाची फील्ड भरा');
+        return;
+      }
+    }
+
+    // For EPIC ID search: require voterId field
+    if (activeTab === 'epic' && !voterId) {
+      alert('कृपया EPIC ID प्रविष्ट करा');
       return;
     }
 
@@ -378,19 +588,9 @@ const Dashboard: React.FC = () => {
       // Determine search method used
       let searchMethod = '';
       if (voterId) {
-        searchMethod = 'Voter ID search';
+        searchMethod = 'EPIC ID शोध';
       } else if (firstName && middleName && lastName) {
-        searchMethod = 'Full name (last_first_middle)';
-      } else if (firstName && lastName) {
-        searchMethod = 'Last_First combination';
-      } else if (firstName && middleName) {
-        searchMethod = 'First_Middle combination';
-      } else if (lastName) {
-        searchMethod = 'Last name only';
-      } else if (firstName) {
-        searchMethod = 'First name only';
-      } else if (middleName) {
-        searchMethod = 'Middle name only';
+        searchMethod = 'पूर्ण नाव (आडनाव_पहिले_मधले)';
       }
 
       setSearchStats({
@@ -404,52 +604,30 @@ const Dashboard: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [formData]);
+  }, [formData, activeTab]);
 
-  // Pre-fill example data
-  const loadExample = useCallback((example: 'full' | 'partial' | 'voterId') => {
-    if (example === 'full') {
-      setFormData({
-        firstName: 'मंगेश',
-        middleName: 'रामदास',
-        lastName: 'बधाले',
-        voterId: ''
-      });
-    } else if (example === 'partial') {
-      setFormData({
-        firstName: 'मंगेश',
-        middleName: '',
-        lastName: 'बधाले',
-        voterId: ''
-      });
-    } else if (example === 'voterId') {
-      setFormData({
-        firstName: '',
-        middleName: '',
-        lastName: '',
-        voterId: 'UXM8227381'
-      });
-    }
+
+  const clearSearch = useCallback(() => {
+    setFormData({
+      firstName: '',
+      middleName: '',
+      lastName: '',
+      voterId: ''
+    });
+    setTransliterationHints({
+      firstName: '',
+      middleName: '',
+      lastName: ''
+    });
+    setSearchResults([]);
+    setSearchPerformed(false);
+    setSearchType(null);
+    setSearchStats({
+      totalFound: 0,
+      timeTaken: 0,
+      searchMethod: ''
+    });
   }, []);
-
-  // Correct the clearSearch function type
-function clearSearch(event: React.MouseEvent<HTMLButtonElement>): void {
-  // Clear all form fields and reset search results
-  setFormData({
-    firstName: '',
-    middleName: '',
-    lastName: '',
-    voterId: ''
-  });
-  setSearchResults([]);
-  setSearchPerformed(false);
-  setSearchType(null);
-  setSearchStats({
-    totalFound: 0,
-    timeTaken: 0,
-    searchMethod: ''
-  });
-}
 
   return (
     <div className="h-fit bg-gradient-to-br from-blue-50 to-gray-50">
@@ -463,6 +641,7 @@ function clearSearch(event: React.MouseEvent<HTMLButtonElement>): void {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             मतदार यादीत नाव शोधा
           </h1>
+          <p className="text-gray-600">इंदुरी मतदार संच</p>
         </header>
 
         <div className="">
@@ -481,7 +660,7 @@ function clearSearch(event: React.MouseEvent<HTMLButtonElement>): void {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                    Search by Name
+                    नावाने शोधा
                   </span>
                 </button>
                 <button
@@ -495,7 +674,7 @@ function clearSearch(event: React.MouseEvent<HTMLButtonElement>): void {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
                     </svg>
-                    Search by EPIC ID
+                    EPIC ID ने शोधा
                   </span>
                 </button>
               </nav>
@@ -508,7 +687,7 @@ function clearSearch(event: React.MouseEvent<HTMLButtonElement>): void {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
                   <label htmlFor="first-name" className="block text-sm font-medium text-gray-700 mb-1">
-                    First Name
+                    पहिले नाव *
                   </label>
                   <input
                     id="first-name"
@@ -516,15 +695,18 @@ function clearSearch(event: React.MouseEvent<HTMLButtonElement>): void {
                     value={formData.firstName}
                     onChange={(e) => handleInputChange('firstName', e.target.value)}
                     placeholder="मंगेश"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
                     autoComplete="off"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Enter in Marathi or English</p>
+                  {transliterationHints.firstName && (
+                    <p className="text-xs text-green-600 mt-1">{transliterationHints.firstName}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">(मराठी किंवा इंग्रजी मध्ये प्रविष्ट करा)</p>
                 </div>
 
                 <div>
                   <label htmlFor="middle-name" className="block text-sm font-medium text-gray-700 mb-1">
-                    Middle Name (Husband/Father)
+                    मधले नाव (वडिलांचे/पतीचे) *
                   </label>
                   <input
                     id="middle-name"
@@ -532,15 +714,18 @@ function clearSearch(event: React.MouseEvent<HTMLButtonElement>): void {
                     value={formData.middleName}
                     onChange={(e) => handleInputChange('middleName', e.target.value)}
                     placeholder="रामदास"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
                     autoComplete="off"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Father's/Husband's name</p>
+                  {transliterationHints.middleName && (
+                    <p className="text-xs text-green-600 mt-1">{transliterationHints.middleName}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">(वडिलांचे/पतीचे नाव)</p>
                 </div>
 
                 <div>
                   <label htmlFor="last-name" className="block text-sm font-medium text-gray-700 mb-1">
-                    Last Name (Surname)
+                    आडनाव *
                   </label>
                   <input
                     id="last-name"
@@ -548,18 +733,21 @@ function clearSearch(event: React.MouseEvent<HTMLButtonElement>): void {
                     value={formData.lastName}
                     onChange={(e) => handleInputChange('lastName', e.target.value)}
                     placeholder="बधाले"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
                     autoComplete="off"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Family surname</p>
+                  {transliterationHints.lastName && (
+                    <p className="text-xs text-green-600 mt-1">{transliterationHints.lastName}</p>
+                  )}
+                  <p className="text-xs text-gray-500 mt-1">(कुळनाव)</p>
                 </div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={handleSearch}
-                  disabled={isLoading || (!formData.firstName && !formData.middleName && !formData.lastName)}
-                  className={`flex-1 py-3 px-6 rounded-lg font-medium transition-colors ${isLoading || (!formData.firstName && !formData.middleName && !formData.lastName)
+                  disabled={isLoading || !formData.firstName || !formData.middleName || !formData.lastName}
+                  className={`flex-1 py-3 px-6 rounded-lg font-medium transition-colors ${isLoading || !formData.firstName || !formData.middleName || !formData.lastName
                       ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       : 'bg-blue-600 text-white hover:bg-blue-700'
                     }`}
@@ -567,10 +755,10 @@ function clearSearch(event: React.MouseEvent<HTMLButtonElement>): void {
                   {isLoading ? (
                     <span className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Searching...
+                      शोधत आहे...
                     </span>
                   ) : (
-                    'Search by Name'
+                    'नावाने शोधा'
                   )}
                 </button>
 
@@ -578,8 +766,10 @@ function clearSearch(event: React.MouseEvent<HTMLButtonElement>): void {
                   onClick={clearSearch}
                   className="py-3 px-6 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Clear Fields
+                  साफ करा
                 </button>
+
+               
               </div>
 
              
@@ -588,7 +778,7 @@ function clearSearch(event: React.MouseEvent<HTMLButtonElement>): void {
             <div className="mb-6">
               <div className="mb-6">
                 <label htmlFor="voter-id" className="block text-sm font-medium text-gray-700 mb-1">
-                  EPIC (Voter ID) Number
+                  EPIC (मतदार ओळखपत्र) क्रमांक
                 </label>
                 <div className="relative">
                   <input
@@ -597,7 +787,7 @@ function clearSearch(event: React.MouseEvent<HTMLButtonElement>): void {
                     value={formData.voterId}
                     onChange={(e) => handleInputChange('voterId', e.target.value.toUpperCase())}
                     placeholder="UXM8227381"
-                    className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-mono"
+                    className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-mono text-lg"
                     autoComplete="off"
                   />
                   <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
@@ -607,10 +797,8 @@ function clearSearch(event: React.MouseEvent<HTMLButtonElement>): void {
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  Enter exact or partial EPIC ID (e.g., UXM8227381, 8227381, or UXM82)
+                  संपूर्ण किंवा अंशतः EPIC ID प्रविष्ट करा (उदा: UXM8227381, 8227381, किंवा UXM82)
                 </p>
-
-              
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
@@ -625,10 +813,10 @@ function clearSearch(event: React.MouseEvent<HTMLButtonElement>): void {
                   {isLoading ? (
                     <span className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Searching...
+                      शोधत आहे...
                     </span>
                   ) : (
-                    'Search by EPIC ID'
+                    'EPIC ID ने शोधा'
                   )}
                 </button>
 
@@ -636,19 +824,11 @@ function clearSearch(event: React.MouseEvent<HTMLButtonElement>): void {
                   onClick={clearSearch}
                   className="py-3 px-6 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Clear EPIC ID
+                  साफ करा
                 </button>
-              </div>
 
-              {/* <div className="mt-4 text-sm text-gray-600">
-                <p className="font-medium mb-1">EPIC ID Format:</p>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li><code className="bg-gray-100 px-1 rounded">ABC1234567</code> - Standard format</li>
-                  <li><code className="bg-gray-100 px-1 rounded">UXM8227381</code> - Example from your data</li>
-                  <li>Case insensitive (UXM8227381 or uxm8227381)</li>
-                  <li>Partial matches work (e.g., 8227381 or UXM82)</li>
-                </ul>
-              </div> */}
+               
+              </div>
             </div>
           )}
 
@@ -657,19 +837,22 @@ function clearSearch(event: React.MouseEvent<HTMLButtonElement>): void {
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
                 <div>
                   <h3 className="font-medium text-gray-700 text-lg">
-                    Results ({searchResults.length})
+                    निकाल ({searchResults.length})
                   </h3>
-                
+                  {searchStats.searchMethod && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      शोध पद्धत: {searchStats.searchMethod} | वेळ: {searchStats.timeTaken}ms
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-4">
-                 
                   {searchResults.length > 0 && (
                     <button
                       onClick={clearSearch}
                       className="text-sm text-blue-600 hover:text-blue-800 font-medium"
                     >
-                      Clear Search
+                      शोध साफ करा
                     </button>
                   )}
                 </div>
@@ -680,11 +863,11 @@ function clearSearch(event: React.MouseEvent<HTMLButtonElement>): void {
                   <svg className="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <p className="text-lg mb-2">No voters found</p>
+                  <p className="text-lg mb-2">मतदार सापडले नाहीत</p>
                   <p className="text-sm text-gray-600">
                     {activeTab === 'name'
-                      ? 'Try adjusting your name search parameters'
-                      : 'Check the EPIC ID format or try a different ID'}
+                      ? 'कृपया नावाचे पॅरामीटर्स बदलून पुन्हा प्रयत्न करा'
+                      : 'EPIC ID फॉर्मेट तपासा किंवा वेगळा ID वापरा'}
                   </p>
                 </div>
               ) : (
@@ -708,18 +891,18 @@ function clearSearch(event: React.MouseEvent<HTMLButtonElement>): void {
                               {result.data.gender}
                             </span>
                             <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs">
-                              {result.data.age} yrs
+                              {result.data.age} वर्ष
                             </span>
                           </div>
                           <div className="text-gray-600 text-sm space-y-1">
                             <div className="flex items-center gap-4">
                               <span className="font-mono text-gray-800 bg-gray-100 px-2 py-0.5 rounded">
-                                {result.id}
+                                EPIC: {result.id}
                               </span>
                               {activeTab === 'epic' && formData.voterId &&
                                 formData.voterId.toUpperCase() === result.id && (
                                   <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs">
-                                    Exact ID Match
+                                    अचूक ID जुळणी
                                   </span>
                                 )}
                             </div>
@@ -729,7 +912,7 @@ function clearSearch(event: React.MouseEvent<HTMLButtonElement>): void {
                           </div>
                         </div>
                         <button className="ml-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm whitespace-nowrap">
-                          View Details
+                          तपशील पहा
                         </button>
                       </div>
                     </div>
@@ -739,8 +922,6 @@ function clearSearch(event: React.MouseEvent<HTMLButtonElement>): void {
             </div>
           )}
         </div>
-
-
       </div>
 
       {selectedVoter && (
