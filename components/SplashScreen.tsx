@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
-export default function SplashScreen({ onComplete }) {
+export default function SplashScreen({ onComplete }: { onComplete: () => void }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
