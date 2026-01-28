@@ -390,7 +390,7 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
       </div>
       
       <div style="text-align: center; color: #6b7280; font-size: 14px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-        <p style="margin: 8px 0;">मतदार यादीत नाव शोधण्याकरिता: https://voter-search-steel.vercel.app/</p>
+        <p style="margin: 8px 0;">मतदार यादीत नाव शोधण्याकरिता: https://meghaprashantbhagwat.com/</p>
         <p style="margin: 8px 0; font-size: 12px; color: #9ca3af;">
           ही माहिती फक्त संदर्भासाठी आहे. अधिकृत माहितीसाठी संबंधित निवडणूक कार्यालयाशी संपर्क साधा.
         </p>
