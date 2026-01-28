@@ -1,3 +1,4 @@
+'use client';
 // Dashboard.tsx
 import React, { useState, useCallback, useEffect } from 'react';
 import { ref, get } from 'firebase/database';
