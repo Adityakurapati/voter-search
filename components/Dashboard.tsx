@@ -320,7 +320,7 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
       <div style="text-align: center; margin-bottom: 25px;">
         <!-- Banner Image -->
         <img src="${bannerUrl}" alt="मतदार शोध प्रणाली" 
-             style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;"
+             style="width: 100%; height: 270px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;"
              crossOrigin="anonymous">
         <h1 style="color: #1e3a8a; margin: 0; font-size: 28px; font-weight: bold;">
           मतदार माहिती स्लिप
@@ -333,68 +333,53 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
       <div style="border: 2px solid #1e3a8a; border-radius: 12px; padding: 25px; margin-bottom: 25px; background: linear-gradient(to bottom right, #f8fafc, #e0f2fe);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
           <div>
-            <h2 style="color: #1e40af; margin: 0 0 5px 0; font-size: 22px; font-weight: bold;">मतदार तपशील</h2>
-            <p style="color: #6b7280; margin: 0; font-size: 14px;">Voter Information Details</p>
+            <h2 style="color: #1e40af; margin: 0 0 5px 0; font-size: 24px; font-weight: bold;">मतदार तपशील</h2>
+            <p style="color: #6b7280; margin: 0; font-size: 18px;">Voter Information Details</p>
           </div>
-          <div style="background: linear-gradient(135deg, #1e40af, #3b82f6); color: white; padding: 8px 20px; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            EPIC: ${voter.id}
-          </div>
+<div style="background: linear-gradient(135deg, #1e40af, #3b82f6); color: white; padding: 8px 20px; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); line-height: 1.5;">
+  EPIC ID: ${voter.id}
+</div> 
         </div>
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
           <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-            <h3 style="color: #374151; margin: 0 0 15px 0; font-size: 18px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">नावाचे तपशील</h3>
-            <p style="margin: 10px 0;"><strong style="color: #4b5563;">पूर्ण नाव:</strong> <span style="color: #111827; font-weight: bold;">${voter.full_name}</span></p>
-            <p style="margin: 10px 0;"><strong style="color: #4b5563;">पहिले नाव:</strong> ${voter.name_parts.first}</p>
-            <p style="margin: 10px 0;"><strong style="color: #4b5563;">मधले नाव:</strong> ${voter.name_parts.middle}</p>
-            <p style="margin: 10px 0;"><strong style="color: #4b5563;">आडनाव:</strong> ${voter.name_parts.last}</p>
-          </div>
-          
-          <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-            <h3 style="color: #374151; margin: 0 0 15px 0; font-size: 18px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">इतर माहिती</h3>
-            <p style="margin: 10px 0;"><strong style="color: #4b5563;">लिंग:</strong> 
-              <span style="background: ${voter.gender === 'पुरुष' ? '#dbeafe' : '#fce7f3'}; 
-                    color: ${voter.gender === 'पुरुष' ? '#1e40af' : '#be185d'}; 
-                    padding: 4px 12px; border-radius: 20px; font-size: 14px; margin-left: 10px;">
+            <h3 style="color: #374151; margin: 0 0 15px 0; font-size: 22px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">नावाचे तपशील</h3>
+            <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">पूर्ण नाव:</strong> <span style="color: #111827; font-weight: bold; font-size: 20px;">${voter.full_name}</span></p>
+            <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">लिंग:</strong> 
+              <span style="color: ${voter.gender === 'पुरुष' ? '#1e40af' : '#be185d'}; font-size: 20px;">
                 ${voter.gender}
               </span>
             </p>
-            <p style="margin: 10px 0;"><strong style="color: #4b5563;">वय:</strong> 
-              <span style="background: #d1fae5; color: #065f46; padding: 4px 12px; border-radius: 20px; font-size: 14px; margin-left: 10px;">
+            <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">वय:</strong> 
+              <span style="color: #065f46; font-size: 20px;">
                 ${voter.age} वर्ष
               </span>
             </p>
-            <p style="margin: 10px 0;"><strong style="color: #4b5563;">अनु. क्र.:</strong> 
-              <span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 14px; margin-left: 10px; font-weight: bold;">
+            <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">अनु. क्र.:</strong> 
+              <span style="color: #92400e; font-size: 20px; font-weight: bold;">
                 ${voterNumber}
               </span>
             </p>
-            <p style="margin: 10px 0;"><strong style="color: #4b5563;">प्रभाग-भाग क्र.:</strong> NA</p>
+            <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">प्रभाग-भाग क्र.:</strong> <span style="font-size: 20px;">NA</span></p>
           </div>
         </div>
         
         <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-          <h3 style="color: #374151; margin: 0 0 15px 0; font-size: 18px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">मतदान केंद्र माहिती</h3>
-          <p style="margin: 10px 0;"><strong style="color: #4b5563;">मतदान केंद्र:</strong> NA</p>
-          <p style="margin: 10px 0;"><strong style="color: #4b5563;">संदर्भ:</strong> ${voter.reference}</p>
+          <h3 style="color: #374151; margin: 0 0 15px 0; font-size: 22px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">मतदान केंद्र माहिती</h3>
+          <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">मतदान केंद्र:</strong> <span style="font-size: 20px;">NA</span></p>
+          <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">संदर्भ:</strong> <span style="font-size: 20px;">${voter.reference}</span></p>
         </div>
       </div>
       
       <div style="text-align: center; padding: 20px; background: linear-gradient(to right, #f8fafc, #e0f2fe); border-radius: 10px; margin-bottom: 20px;">
-        <p style="color: #1e40af; font-size: 18px; margin: 0 0 10px 0; font-weight: bold;">
+        <p style="color: #1e40af; font-size: 22px; margin: 0 0 10px 0; font-weight: bold;">
           आपली नम्र
         </p>
-        <p style="color: #374151; font-size: 20px; margin: 0; font-weight: bold;">
+        <p style="color: #374151; font-size: 24px; margin: 0; font-weight: bold;">
           सौ.मेघाताई प्रशांतदादा भागवत
         </p>
       </div>
-      
-      <div style="text-align: center; color: #6b7280; font-size: 14px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-        <p style="margin: 8px 0;">मतदार यादीत नाव शोधण्याकरिता: https://meghaprashantbhagwat.com/</p>
-        <p style="margin: 8px 0; font-size: 12px; color: #9ca3af;">
-          ही माहिती फक्त संदर्भासाठी आहे. अधिकृत माहितीसाठी संबंधित निवडणूक कार्यालयाशी संपर्क साधा.
-        </p>
-      </div>
+     
     `;
 
     // Add container to document
@@ -408,7 +393,7 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
       backgroundColor: '#ffffff', // Note: it's backgroundColor, not background
       useCORS: true,
       logging: false,
-      
+
     });
 
     // Convert canvas to image URL
