@@ -3,8 +3,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { ref, get } from 'firebase/database';
 import { db } from '@/lib/firebase';
-import { transliterateToMarathi, containsMarathi } from '@/lib/transliterate';
 import html2canvas from 'html2canvas';
+import { containsMarathi, transliterateToMarathi } from '@/lib/transliterate';
 
 // Types
 interface VoterData {
