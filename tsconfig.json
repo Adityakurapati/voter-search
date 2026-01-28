@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "lib/transliterate.js"  ],
+, "lib/transliterate.ts"  ],
   "exclude": ["node_modules"]
 }

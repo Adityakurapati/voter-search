@@ -5,21 +5,44 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'मतदार शोध प्रणाली - इंदुरी',
   description: 'इंदुरी ग्रामपंचायत मतदार शोध प्रणाली',
+
+  icons: {
+    icon: '/banner.jpeg',
+    apple: '/banner.jpeg',
+  },
+
+  openGraph: {
+    title: 'मतदार शोध प्रणाली - इंदुरी',
+    description: 'इंदुरी ग्रामपंचायत मतदार शोध प्रणाली',
+    url: 'https://voter-search-steel.vercel.app/',
+    siteName: 'मतदार शोध प्रणाली - इंदुरी',
+    images: [
+      {
+        url: 'https://voter-search-steel.vercel.app/banner.jpeg',
+        width: 1200,
+        height: 630,
+        alt: 'मतदार शोध प्रणाली - इंदुरी',
+      },
+    ],
+    locale: 'mr_IN',
+    type: 'website',
+  },
+
+  twitter: {
+    card: 'summary_large_image',
+    title: 'मतदार शोध प्रणाली - इंदुरी',
+    description: 'इंदुरी ग्रामपंचायत मतदार शोध प्रणाली',
+    images: ['https://voter-search-steel.vercel.app/banner.jpeg'],
+  },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="mr">
-      <head>
-        <meta charSet="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-      </head>
       <body className="min-h-screen">
         {children}
       </body>
