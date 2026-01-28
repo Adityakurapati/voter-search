@@ -267,7 +267,7 @@ EPIC ID: ${voter.id}
 
 आपला नम्र: सौ.मेघाताई प्रशांतदादा भागवत
 
-मतदार यादीत नाव शोधण्याकरिता : https://voter-search-steel.vercel.app/`;
+मतदार यादीत नाव शोधण्याकरिता : https://meghaprashantbhagwat.com/`;
 };
 
 // Share voter details function
