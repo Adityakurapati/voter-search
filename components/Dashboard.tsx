@@ -408,7 +408,7 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
 
     // Use html2canvas to capture the container as an image
     const canvas = await html2canvas(container, {
-      background: '#ffffff', // Note: it's backgroundColor, not background
+      backgroundColor: '#ffffff', // Note: it's backgroundColor, not background
       useCORS: true,
       logging: false,
       
