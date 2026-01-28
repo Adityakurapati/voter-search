@@ -382,7 +382,7 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
       
       <div style="text-align: center; padding: 20px; background: linear-gradient(to right, #f8fafc, #e0f2fe); border-radius: 10px; margin-bottom: 20px;">
         <p style="color: #1e40af; font-size: 18px; margin: 0 0 10px 0; font-weight: bold;">
-          आपला नम्र
+          आपली नम्र
         </p>
         <p style="color: #374151; font-size: 20px; margin: 0; font-weight: bold;">
           सौ.मेघाताई प्रशांतदादा भागवत
@@ -393,9 +393,6 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
         <p style="margin: 8px 0;">मतदार यादीत नाव शोधण्याकरिता: https://meghaprashantbhagwat.com/</p>
         <p style="margin: 8px 0; font-size: 12px; color: #9ca3af;">
           ही माहिती फक्त संदर्भासाठी आहे. अधिकृत माहितीसाठी संबंधित निवडणूक कार्यालयाशी संपर्क साधा.
-        </p>
-        <p style="margin: 8px 0; font-size: 12px; color: #dc2626;">
-          ⚠️ सूचना: हे मतदार माहिती स्लिप प्रदर्शनासाठी आहे
         </p>
       </div>
     `;
