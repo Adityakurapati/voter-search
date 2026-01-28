@@ -1,9 +1,9 @@
 'use client';
-// Dashboard.tsx
+// components/Dashboard.tsx
 import React, { useState, useCallback, useEffect } from 'react';
 import { ref, get } from 'firebase/database';
-import { db } from '../lib/firebase';
-import { transliterateToMarathi, containsMarathi } from '../lib/transliterate';
+import { db } from '@/lib/firebase';
+import { transliterateToMarathi, containsMarathi } from '@/lib/transliterate';
 import html2canvas from 'html2canvas';
 
 // Types
@@ -17,6 +17,7 @@ interface VoterData {
   gender: string;
   age: number;
   reference: string;
+  serial_no?: number; // Optional field
 }
 
 interface IndexEntry {
@@ -253,9 +254,10 @@ const copyToClipboard = (text: string) => {
 
 // Generate share text in the required format
 const generateShareText = (voter: VoterData & { id: string }): string => {
-  // Extract voter number from reference
-  const voterNumber = voter.reference ? voter.reference.match(/(\d+)/)?.[0] || 'NA' : 'NA';
-  
+  // Use serial_no if available, otherwise extract from reference
+  const voterNumber = voter.serial_no ? voter.serial_no.toString() :
+    (voter.reference ? voter.reference.match(/(\d+)/)?.[0] || 'NA' : 'NA');
+
   return `नाव: ${voter.full_name}
 वय: ${voter.age}
 EPIC ID: ${voter.id}
@@ -279,12 +281,12 @@ const shareVoterDetails = (voter: VoterData & { id: string }) => {
       text: shareText,
       url: window.location.href,
     })
-    .then(() => console.log('शेयर यशस्वी!'))
-    .catch((error) => {
-      console.error('शेयर त्रुटी:', error);
-      // Fallback to copying to clipboard
-      copyToClipboard(shareText);
-    });
+      .then(() => console.log('शेयर यशस्वी!'))
+      .catch((error) => {
+        console.error('शेयर त्रुटी:', error);
+        // Fallback to copying to clipboard
+        copyToClipboard(shareText);
+      });
   } else {
     // Fallback for desktop - copy to clipboard
     copyToClipboard(shareText);
@@ -293,9 +295,10 @@ const shareVoterDetails = (voter: VoterData & { id: string }) => {
 
 // Download voter slip as image
 const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
-  // Extract voter number from reference
-  const voterNumber = voter.reference ? voter.reference.match(/(\d+)/)?.[0] || 'NA' : 'NA';
-  
+  // Use serial_no if available, otherwise extract from reference
+  const voterNumber = voter.serial_no ? voter.serial_no.toString() :
+    (voter.reference ? voter.reference.match(/(\d+)/)?.[0] || 'NA' : 'NA');
+
   try {
     // Create a container for the voter slip
     const container = document.createElement('div');
@@ -308,13 +311,17 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
     container.style.boxSizing = 'border-box';
     container.style.fontFamily = "'Noto Sans Devanagari', 'Arial Unicode MS', Arial, sans-serif";
     container.style.color = '#333';
-    
+
+    // Get the full URL for banner image
+    const bannerUrl = `${window.location.origin}/banner.jpeg`;
+
     // Add content to container
     container.innerHTML = `
       <div style="text-align: center; margin-bottom: 25px;">
         <!-- Banner Image -->
-        <img src="/banner.jpeg" alt="मतदार शोध प्रणाली" 
-             style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;">
+        <img src="${bannerUrl}" alt="मतदार शोध प्रणाली" 
+             style="width: 100%; height: 180px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;"
+             crossOrigin="anonymous">
         <h1 style="color: #1e3a8a; margin: 0; font-size: 28px; font-weight: bold;">
           मतदार माहिती स्लिप
         </h1>
@@ -358,7 +365,7 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
               </span>
             </p>
             <p style="margin: 10px 0;"><strong style="color: #4b5563;">अनु. क्र.:</strong> 
-              <span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 14px; margin-left: 10px;">
+              <span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-size: 14px; margin-left: 10px; font-weight: bold;">
                 ${voterNumber}
               </span>
             </p>
@@ -392,33 +399,38 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
         </p>
       </div>
     `;
-    
+
     // Add container to document
     document.body.appendChild(container);
-    
+
+    // Wait for image to load
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     // Use html2canvas to capture the container as an image
     const canvas = await html2canvas(container, {
-      background: '#ffffff',
+      background: '#ffffff', // Note: it's backgroundColor, not background
       useCORS: true,
-      allowTaint: true,
-      logging: false
+      logging: false,
+      
     });
-    
+
     // Convert canvas to image URL
     const imageUrl = canvas.toDataURL('image/png', 1.0);
-    
+
     // Create download link
     const link = document.createElement('a');
     link.href = imageUrl;
     link.download = `voter_slip_${voter.id}_${Date.now()}.png`;
+    document.body.appendChild(link);
     link.click();
-    
+    document.body.removeChild(link);
+
     // Clean up
     document.body.removeChild(container);
-    
+
     // Show success message
     alert('मतदार स्लिप डाऊनलोड होत आहे...');
-    
+
   } catch (error) {
     console.error('Error generating voter slip:', error);
     alert('मतदार स्लिप डाऊनलोड करताना त्रुटी आली. कृपया पुन्हा प्रयत्न करा.');
@@ -429,7 +441,7 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
 const shareViaApp = (voter: VoterData & { id: string }, app: 'whatsapp' | 'telegram' | 'sms' | 'email') => {
   const voterInfo = generateShareText(voter);
   const encodedText = encodeURIComponent(voterInfo);
-  
+
   switch (app) {
     case 'whatsapp':
       window.open(`https://wa.me/?text=${encodedText}`, '_blank');
@@ -505,8 +517,8 @@ const VoterModal: React.FC<VoterModalProps> = ({ voter, onClose }) => {
               <div>
                 <span className="font-medium text-gray-700 block mb-1">लिंग:</span>
                 <span className={`px-3 py-1 rounded-full text-sm ${voter.gender === 'पुरुष'
-                    ? 'bg-blue-100 text-blue-800'
-                    : 'bg-pink-100 text-pink-800'
+                  ? 'bg-blue-100 text-blue-800'
+                  : 'bg-pink-100 text-pink-800'
                   }`}>
                   {voter.gender}
                 </span>
@@ -518,6 +530,13 @@ const VoterModal: React.FC<VoterModalProps> = ({ voter, onClose }) => {
                   {voter.age} वर्ष
                 </span>
               </div>
+            </div>
+
+            <div>
+              <span className="font-medium text-gray-700 block mb-1">अनु. क्र.:</span>
+              <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-bold">
+                {voter.serial_no || 'NA'}
+              </span>
             </div>
 
             <div>
@@ -661,7 +680,7 @@ const VoterModal: React.FC<VoterModalProps> = ({ voter, onClose }) => {
             >
               बंद करा
             </button>
-            
+
             <button
               onClick={() => shareVoterDetails(voter)}
               className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -806,13 +825,14 @@ const Dashboard: React.FC = () => {
   }, []);
 
   return (
-    <div className="h-fit bg-gradient-to-br from-blue-50 to-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-50">
       <div className="max-w-2xl bg-white px-4 mx-auto py-6">
         <header className="text-center mb-8">
           <img
             src="/banner.jpeg"
             alt="मतदार शोध प्रणाली Logo"
-            className="w-full rounded h-full mx-auto mb-4"
+            className="w-full rounded-lg h-full mx-auto mb-4"
+            crossOrigin="anonymous"
           />
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             मतदार यादीत नाव शोधा
@@ -828,8 +848,8 @@ const Dashboard: React.FC = () => {
                 <button
                   onClick={() => setActiveTab('name')}
                   className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'name'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                 >
                   <span className="flex items-center gap-2">
@@ -842,8 +862,8 @@ const Dashboard: React.FC = () => {
                 <button
                   onClick={() => setActiveTab('epic')}
                   className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'epic'
-                      ? 'border-purple-500 text-purple-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-purple-500 text-purple-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                     }`}
                 >
                   <span className="flex items-center gap-2">
@@ -924,8 +944,8 @@ const Dashboard: React.FC = () => {
                   onClick={handleSearch}
                   disabled={isLoading || !formData.firstName || !formData.middleName || !formData.lastName}
                   className={`flex-1 py-3 px-6 rounded-lg font-medium transition-colors ${isLoading || !formData.firstName || !formData.middleName || !formData.lastName
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-blue-600 text-white hover:bg-blue-700'
                     }`}
                 >
                   {isLoading ? (
@@ -978,8 +998,8 @@ const Dashboard: React.FC = () => {
                   onClick={handleSearch}
                   disabled={isLoading || !formData.voterId}
                   className={`flex-1 py-3 px-6 rounded-lg font-medium transition-colors ${isLoading || !formData.voterId
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-purple-600 text-white hover:bg-purple-700'
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-purple-600 text-white hover:bg-purple-700'
                     }`}
                 >
                   {isLoading ? (
@@ -1055,14 +1075,19 @@ const Dashboard: React.FC = () => {
                               {result.data.full_name}
                             </div>
                             <span className={`px-2 py-0.5 rounded-full text-xs ${result.data.gender === 'पुरुष'
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-pink-100 text-pink-800'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-pink-100 text-pink-800'
                               }`}>
                               {result.data.gender}
                             </span>
                             <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs">
                               {result.data.age} वर्ष
                             </span>
+                            {result.data.serial_no && (
+                              <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold">
+                                अनु. क्र.: {result.data.serial_no}
+                              </span>
+                            )}
                           </div>
                           <div className="text-gray-600 text-sm space-y-1">
                             <div className="flex items-center gap-4">
