@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'मतदार यादीत नाव शोधा - ',
-  description: 'इंदोरी वाराळे जिल्हा परिषद पंचायत गट मतदारसंघातील मतदार यादीत आपले नाव तपासा',
+  description: 'इंदोरी वराळे जिल्हा परिषद पंचायत गट मतदारसंघातील मतदार यादीत आपले नाव तपासा',
 
   icons: {
     icon: '/banner.jpeg',
@@ -13,15 +13,15 @@ export const metadata: Metadata = {
 
   openGraph: {
     title: 'मतदार यादीत नाव शोधा - ',
-    description: 'इंदोरी वाराळे जिल्हा परिषद पंचायत गट मतदारसंघातील मतदार यादीत आपले नाव तपासा',
+    description: 'इंदोरी वराळे जिल्हा परिषद पंचायत गट मतदारसंघातील मतदार यादीत आपले नाव तपासा',
     url: 'https://meghaprashantbhagwat.com/',
-    siteName: 'मतदार यादीत नाव शोधा - इंदोरी वाराळे जिल्हा परिषद पंचायत गट',
+    siteName: 'मतदार यादीत नाव शोधा - इंदोरी वराळे जिल्हा परिषद पंचायत गट',
     images: [
       {
         url: 'https://meghaprashantbhagwat.com/banner.jpeg',
         width: 1200,
         height: 630,
-        alt: 'मतदार यादीत नाव शोधा - इंदोरी वाराळे जिल्हा परिषद पंचायत गट',
+        alt: 'मतदार यादीत नाव शोधा - इंदोरी वराळे जिल्हा परिषद पंचायत गट',
       },
     ],
     locale: 'mr_IN',
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'मतदार यादीत नाव शोधा - ',
-    description: 'इंदोरी वाराळे जिल्हा परिषद पंचायत गट मतदारसंघातील मतदार यादीत आपले नाव तपासा',
+    description: 'इंदोरी वराळे जिल्हा परिषद पंचायत गट मतदारसंघातील मतदार यादीत आपले नाव तपासा',
     images: ['https://meghaprashantbhagwat.com/banner.jpeg'],
   },
 };

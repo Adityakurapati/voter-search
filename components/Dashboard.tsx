@@ -268,7 +268,7 @@ EPIC ID: ${voter.id}
 आपली नम्र: *सौ.मेघाताई प्रशांतदादा भागवत*
 
 
-मतदार यादीत नाव शोधण्याकरिता : https://meghaprashantbhagwat.com/?share=3`;
+मतदार यादीत नाव शोधण्याकरिता : https://meghaprashantbhagwat.com/?share=4`;
 };
 
 // Share voter details function
@@ -319,14 +319,14 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
     container.innerHTML = `
       <div style="text-align: center; margin-bottom: 25px;">
         <!-- Banner Image -->
-        <img src="${bannerUrl}" alt="मतदार यादीत नाव शोधा - इंदोरी वाराळे जिल्हा परिषद पंचायत गट" 
+        <img src="${bannerUrl}" alt="मतदार यादीत नाव शोधा - इंदोरी वराळे जिल्हा परिषद पंचायत गट" 
              style="width: 100%; height: 270px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;"
              crossOrigin="anonymous">
         <h1 style="color: #1e3a8a; margin: 0; font-size: 28px; font-weight: bold;">
           मतदार माहिती स्लिप
         </h1>
         <p style="color: #4b5563; margin: 5px 0 0 0; font-size: 16px;">
-          इंदोरी वाराळे जिल्हा परिषद पंचायत गट
+          इंदोरी वराळे जिल्हा परिषद पंचायत गट
         </p>
       </div>
       
@@ -832,7 +832,7 @@ const Dashboard: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             मतदार यादीत नाव शोधा
           </h1>
-          <p className="text-gray-600">इंदोरी वाराळे जिल्हा परिषद पंचायत गट</p>
+          <p className="text-gray-600">इंदोरी वराळे जिल्हा परिषद पंचायत गट</p>
         </header>
 
         <div className="">
