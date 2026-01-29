@@ -24,7 +24,7 @@ const transliterationMap: { [key: string]: string } = {
 };
 
 // Enhanced mapping for common Marathi names and words
-const commonWordMap= {
+const commonWordMap : { [key: string]: string }= {
   "Mangesh": "मंगेश",
   "anbrnath": "अंबरनाथ",
   "hapse": "हाप्से",
@@ -9079,16 +9079,10 @@ const commonWordMap= {
   "hatkr": "हाटकर"
 };
 
-/**
- * Check if text contains Marathi characters
- */
 export const containsMarathi = (text: string): boolean => {
   return /[\u0900-\u097F]/.test(text);
 };
 
-/**
- * Transliterate English text to Marathi
- */
 export const transliterateToMarathi = (englishText: string): string => {
   if (!englishText || containsMarathi(englishText)) {
     return englishText;
