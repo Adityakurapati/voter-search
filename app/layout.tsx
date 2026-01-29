@@ -12,16 +12,16 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: 'मतदार शोध प्रणाली - इंदुरी',
-    description: 'इंदुरी ग्रामपंचायत मतदार शोध प्रणाली',
+    title: 'मतदार यादीत नाव शोधा - तळेगाव नगरपरिषद',
+    description: 'तळेगाव नगरपरिषद मतदारसंघातील मतदार यादीत',
     url: 'https://voter-search-steel.vercel.app/',
-    siteName: 'मतदार शोध प्रणाली - इंदुरी',
+    siteName: 'मतदार यादीत नाव शोधा - तळेगाव नगरपरिषद',
     images: [
       {
         url: 'https://voter-search-steel.vercel.app/banner.jpeg',
         width: 1200,
         height: 630,
-        alt: 'मतदार शोध प्रणाली - इंदुरी',
+        alt: 'मतदार यादीत नाव शोधा - तळेगाव नगरपरिषद',
       },
     ],
     locale: 'mr_IN',
@@ -30,8 +30,8 @@ export const metadata: Metadata = {
 
   twitter: {
     card: 'summary_large_image',
-    title: 'मतदार शोध प्रणाली - इंदुरी',
-    description: 'इंदुरी ग्रामपंचायत मतदार शोध प्रणाली',
+    title: 'मतदार यादीत नाव शोधा - तळेगाव नगरपरिषद',
+    description: 'आपले नाव तपासा',
     images: ['https://voter-search-steel.vercel.app/banner.jpeg'],
   },
 };

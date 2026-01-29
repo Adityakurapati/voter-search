@@ -326,7 +326,7 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
           मतदार माहिती स्लिप
         </h1>
         <p style="color: #4b5563; margin: 5px 0 0 0; font-size: 16px;">
-          इंदुरी मतदार संच - मतदार शोध प्रणाली
+          तळेगाव नगरपरिषद मतदारसंघातील मतदार यादीत आपले नाव तपासा
         </p>
       </div>
       
@@ -825,7 +825,7 @@ const Dashboard: React.FC = () => {
         <header className="text-center mb-8">
           <img
             src="/banner.jpeg"
-            alt="मतदार शोध प्रणाली Logo"
+            alt="प्रणाली Logo"
             className="w-full rounded-lg h-full mx-auto mb-4"
             crossOrigin="anonymous"
           />
