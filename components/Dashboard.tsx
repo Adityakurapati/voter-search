@@ -264,6 +264,7 @@ EPIC ID: ${voter.id}
 प्रभाग-भाग क्र.: NA
 अनु. क्र.: ${voterNumber}
 मतदान केंद्र: NA
+मतदानाची तारीख व वेळ : दि. ५ फेब्रुवारी २०२६ रोजी सकाळी ७.३० ते सायंकाळी ५.३०
 
 आपली नम्र: *सौ.मेघाताई प्रशांतदादा भागवत*
 
@@ -368,6 +369,7 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
         <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
           <h3 style="color: #374151; margin: 0 0 15px 0; font-size: 22px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">मतदान केंद्र माहिती</h3>
           <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">मतदान केंद्र:</strong> <span style="font-size: 20px;">NA</span></p>
+          <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">मतदानाची तारीख व वेळ:</strong> <span style="font-size: 20px;">दि. ५ फेब्रुवारी २०२६ रोजी सकाळी ७.३० ते सायंकाळी ५.३०</span></p>
           <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">संदर्भ:</strong> <span style="font-size: 20px;">${voter.reference}</span></p>
         </div>
       </div>
@@ -523,6 +525,12 @@ const VoterModal: React.FC<VoterModalProps> = ({ voter, onClose }) => {
                 <span className="font-medium text-gray-700 block mb-1">मतदान केंद्र:</span>
                 <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
                   NA
+                </span>
+              </div>
+              <div>
+                <span className="font-medium text-gray-700 block mb-1">मतदानाची तारीख व वेळ:</span>
+                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                  दि. ५ फेब्रुवारी २०२६ रोजी सकाळी ७.३० ते सायंकाळी ५.३०
                 </span>
               </div>
             </div>
