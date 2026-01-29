@@ -533,8 +533,8 @@ const VoterModal: React.FC<VoterModalProps> = ({ voter, onClose }) => {
 
              <div>
                 <span className="font-medium text-gray-700 block mb-1">मतदानाची तारीख व वेळ:</span>
-                <span className="px-3 col-span-2 py-1 text-green-800 rounded-full text-sm">
-                  ५ फेब्रुवारी २०२६ रोजी सकाळी ७.३० ते सायंकाळी ५.३०
+                <span className="col-span-2 py-1 text-green-800 rounded-full text-[16px]">
+                  ५ फेब्रुवारी २०२६ रोजी स. ७.३० ते सा. ५.३०
                 </span>
               </div>
 
