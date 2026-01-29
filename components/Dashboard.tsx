@@ -265,7 +265,8 @@ EPIC ID: ${voter.id}
 अनु. क्र.: ${voterNumber}
 मतदान केंद्र: NA
 
-आपली नम्र: सौ.मेघाताई प्रशांतदादा भागवत
+आपली नम्र: *सौ.मेघाताई प्रशांतदादा भागवत*
+
 
 मतदार यादीत नाव शोधण्याकरिता : https://meghaprashantbhagwat.com/?share=3`;
 };
@@ -375,7 +376,7 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
         <p style="color: #1e40af; font-size: 22px; margin: 0 0 10px 0; font-weight: bold;">
           आपली नम्र
         </p>
-        <p style="color: #374151; font-size: 24px; margin: 0; font-weight: bold;">
+        <p style="color: #374151; font-size: 24px; margin: 0; font-weight: bolder;">
           सौ.मेघाताई प्रशांतदादा भागवत
         </p>
       </div>
