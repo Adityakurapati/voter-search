@@ -44,7 +44,7 @@ export default function SplashScreen({ onComplete }: { onComplete: () => void })
           transition={{ delay: 0.5 }}
           className="text-xl text-orange-50"
         >
-          इंदोरी वराळे जिल्हा परिषद गटाच्या अधिकृत उमेदवार
+         इंदोरी वराळे जिल्हा परिषद पंचायत गट
         </motion.p>
 
         {loading && (
