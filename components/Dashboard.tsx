@@ -319,7 +319,7 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
     container.innerHTML = `
       <div style="text-align: center; margin-bottom: 25px;">
         <!-- Banner Image -->
-        <img src="${bannerUrl}" alt="मतदार शोध प्रणाली" 
+        <img src="${bannerUrl}" alt="मतदार यादीत नाव शोधा - तळेगाव नगरपरिषद" 
              style="width: 100%; height: 270px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;"
              crossOrigin="anonymous">
         <h1 style="color: #1e3a8a; margin: 0; font-size: 28px; font-weight: bold;">
