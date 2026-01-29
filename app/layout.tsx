@@ -3,8 +3,8 @@ import './globals.css';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'मतदार शोध प्रणाली - इंदुरी',
-  description: 'इंदुरी ग्रामपंचायत मतदार शोध प्रणाली',
+  title: 'मतदार यादीत नाव शोधा - तळेगाव नगरपरिषद',
+  description: 'तळेगाव नगरपरिषद मतदारसंघातील मतदार यादीत आपले नाव तपासा',
 
   icons: {
     icon: '/banner.jpeg',

@@ -360,6 +360,7 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
                 ${voterNumber}
               </span>
             </p>
+           
             <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">प्रभाग-भाग क्र.:</strong> <span style="font-size: 20px;">NA</span></p>
           </div>
         </div>
@@ -510,6 +511,18 @@ const VoterModal: React.FC<VoterModalProps> = ({ voter, onClose }) => {
                 <span className="font-medium text-gray-700 block mb-1">वय:</span>
                 <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
                   {voter.age} वर्ष
+                </span>
+              </div>
+              <div>
+                <span className="font-medium text-gray-700 block mb-1">प्रभाग-भाग क्र.:</span>
+                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                NA
+                </span>
+              </div>
+              <div>
+                <span className="font-medium text-gray-700 block mb-1">मतदान केंद्र:</span>
+                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                  NA
                 </span>
               </div>
             </div>
