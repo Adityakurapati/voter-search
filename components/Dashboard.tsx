@@ -267,7 +267,7 @@ EPIC ID: ${voter.id}
 
 आपली नम्र: सौ.मेघाताई प्रशांतदादा भागवत
 
-मतदार यादीत नाव शोधण्याकरिता : https://meghaprashantbhagwat.com/`;
+मतदार यादीत नाव शोधण्याकरिता : https://meghaprashantbhagwat.com/?share=1`;
 };
 
 // Share voter details function
@@ -279,7 +279,6 @@ const shareVoterDetails = (voter: VoterData & { id: string }) => {
     navigator.share({
       title: `मतदार माहिती: ${voter.full_name}`,
       text: shareText,
-      url: window.location.href,
     })
       .then(() => console.log('शेयर यशस्वी!'))
       .catch((error) => {
