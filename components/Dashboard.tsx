@@ -314,7 +314,7 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
     container.style.color = '#333';
 
     // Get the full URL for banner image
-    const bannerUrl = `${window.location.origin}/banner.jpeg`;
+    const bannerUrl = `/banner.jpeg`;
 
     // Add content to container
     container.innerHTML = `
@@ -342,7 +342,8 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
 </div> 
         </div>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        
+        <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 20px;">
           <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
             <h3 style="color: #374151; margin: 0 0 15px 0; font-size: 22px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">नावाचे तपशील</h3>
             <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">पूर्ण नाव:</strong> <span style="color: #111827; font-weight: bold; font-size: 20px;">${voter.full_name}</span></p>
