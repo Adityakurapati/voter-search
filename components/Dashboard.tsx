@@ -488,7 +488,7 @@ const VoterModal: React.FC<VoterModalProps> = ({ voter, onClose }) => {
               </div>
 
               <div>
-                <span className="font-medium text-gray-700 block mb-1">मधले नाव:</span>
+                <span className="font-medium text-gray-700 block mb-1">मधले/इतर नाव:</span>
                 <span className="text-gray-900">{voter.name_parts.middle}</span>
               </div>
 
@@ -527,19 +527,18 @@ const VoterModal: React.FC<VoterModalProps> = ({ voter, onClose }) => {
                   NA
                 </span>
               </div>
-              <div>
+             
+            </div>
+
+             <div>
                 <span className="font-medium text-gray-700 block mb-1">मतदानाची तारीख व वेळ:</span>
-                <span className="px-3 py-1 text-green-800 rounded-full text-sm">
+                <span className="px-3 col-span-2 py-1 text-green-800 rounded-full text-sm">
                   दि. ५ फेब्रुवारी २०२६ रोजी सकाळी ७.३० ते सायंकाळी ५.३०
                 </span>
               </div>
-            </div>
 
             <div>
-              <span className="font-medium text-gray-700 block mb-1">अनु. क्र.:</span>
-              <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-bold">
-                {voter.serial_no || 'NA'}
-              </span>
+              <span className="font-medium text-gray-700 block mb-1">अनु. क्र.: {voter.serial_no || 'NA'}</span>
             </div>
 
             <div>
