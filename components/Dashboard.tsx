@@ -1012,7 +1012,7 @@ const Dashboard: React.FC = () => {
                     type="text"
                     value={formData.firstName}
                     onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    placeholder="मंगेश"
+                    placeholder=""
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
                     autoComplete="off"
                   />
@@ -1031,7 +1031,7 @@ const Dashboard: React.FC = () => {
                     type="text"
                     value={formData.middleName}
                     onChange={(e) => handleInputChange('middleName', e.target.value)}
-                    placeholder="रामदास"
+                    placeholder=""
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
                     autoComplete="off"
                   />
@@ -1050,7 +1050,7 @@ const Dashboard: React.FC = () => {
                     type="text"
                     value={formData.lastName}
                     onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    placeholder="बधाले"
+                    placeholder=""
                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
                     autoComplete="off"
                   />
