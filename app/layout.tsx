@@ -20,7 +20,7 @@ export const metadata: Metadata = {
       {
         url: 'https://meghaprashantbhagwat.com/banner.jpeg',
         width: 1200,
-        height: 800, // Changed from 630 to 800 for taller image
+        height: 1200, // Changed from 630 to 800 for taller image
         alt: 'मतदार यादीत नाव शोधा - इंदोरी वराळे जिल्हा परिषद पंचायत गट',
       },
     ],
