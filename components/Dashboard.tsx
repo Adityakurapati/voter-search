@@ -1013,18 +1013,18 @@ const Dashboard: React.FC = () => {
                     value={formData.firstName}
                     onChange={(e) => handleInputChange('firstName', e.target.value)}
                     placeholder=""
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
+                    className="w-full text-black p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
                     autoComplete="off"
                   />
-                  {transliterationHints.firstName && (
+                  {/* {transliterationHints.firstName && (
                     <p className="text-xs text-green-600 mt-1">{transliterationHints.firstName}</p>
-                  )}
+                  )} */}
                   <p className="text-xs text-gray-500 mt-1">(मराठी मध्ये प्रविष्ट करा)</p>
                 </div>
 
                 <div>
                   <label htmlFor="middle-name" className="block text-sm font-medium text-gray-700 mb-1">
-                    मधले नाव (वडिलांचे/पतीचे)
+                    मधले नाव (वडिलांचे/पतीचे/इतर नाव)
                   </label>
                   <input
                     id="middle-name"
@@ -1032,12 +1032,12 @@ const Dashboard: React.FC = () => {
                     value={formData.middleName}
                     onChange={(e) => handleInputChange('middleName', e.target.value)}
                     placeholder=""
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
+                    className="w-full test-black p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
                     autoComplete="off"
                   />
-                  {transliterationHints.middleName && (
+                  {/* {transliterationHints.middleName && (
                     <p className="text-xs text-green-600 mt-1">{transliterationHints.middleName}</p>
-                  )}
+                  )} */}
                   <p className="text-xs text-gray-500 mt-1">(वडिलांचे/पतीचे नाव - वैकल्पिक)</p>
                 </div>
 
@@ -1051,12 +1051,12 @@ const Dashboard: React.FC = () => {
                     value={formData.lastName}
                     onChange={(e) => handleInputChange('lastName', e.target.value)}
                     placeholder=""
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
+                    className="w-full text-black p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
                     autoComplete="off"
                   />
-                  {transliterationHints.lastName && (
+                  {/* {transliterationHints.lastName && (
                     <p className="text-xs text-green-600 mt-1">{transliterationHints.lastName}</p>
-                  )}
+                  )} */}
                   <p className="text-xs text-gray-500 mt-1">(कुळनाव)</p>
                 </div>
               </div>
