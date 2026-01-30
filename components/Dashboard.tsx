@@ -300,7 +300,7 @@ EPIC ID: ${voter.id}
 मतदान केंद्र: ${voter.booth_center}
 बूथ क्रमांक: ${voter.booth_number}
 गाव: ${voter.village}
-मतदानाची तारीख व वेळ : ५ फेब्रुवारी २०२६ रोजी सकाळी ७.३० ते सायंकाळी ५.३०
+मतदानाची तारीख व वेळ : ७ फेब्रुवारी २०२६ रोजी सकाळी ७.३० ते सायंकाळी ५.३०
 
 आपली नम्र: *सौ.मेघाताई प्रशांतदादा भागवत*
 
@@ -406,7 +406,7 @@ const downloadVoterSlip = async (voter: VoterWithParsedName & { id: string }) =>
           <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">मतदान केंद्र:</strong> <span style="font-size: 18px;">${voter.booth_center}</span></p>
           <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">बूथ क्रमांक:</strong> <span style="font-size: 20px;">${voter.booth_number}</span></p>
           <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">गाव:</strong> <span style="font-size: 20px;">${voter.village}</span></p>
-          <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">मतदानाची तारीख व वेळ:</strong> <span style="font-size: 18px;">५ फेब्रुवारी २०२६ रोजी सकाळी ७.३० ते सायंकाळी ५.३०</span></p>
+          <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">मतदानाची तारीख व वेळ:</strong> <span style="font-size: 18px;">७ फेब्रुवारी २०२६ रोजी सकाळी ७.३० ते सायंकाळी ५.३०</span></p>
         </div>
       </div>
       
@@ -568,7 +568,7 @@ const VoterModal: React.FC<VoterModalProps> = ({ voter, onClose }) => {
             <div>
               <span className="font-medium text-gray-700 block mb-1">मतदानाची तारीख व वेळ:</span>
               <span className="col-span-2 py-1 text-green-800 rounded-full text-[16px]">
-                ५ फेब्रुवारी २०२६ रोजी स. ७.३० ते सा. ५.३०
+                ७ फेब्रुवारी २०२६ रोजी स. ७.३० ते सा. ५.३०
               </span>
             </div>
 
