@@ -16,9 +16,9 @@ interface VoterData {
   booth_number: string;
   village: string;
   prabhag_number: string;
-  gan: string;           // Add this field
-  gan_full: string;      // Add this field
-  gat: string;           // Add this field
+  gan: string;
+  gan_full: string;
+  gat: string;
 }
 
 interface VoterWithParsedName extends VoterData {
@@ -57,21 +57,18 @@ const parseMarathiName = (fullName: string): { last: string; first: string; midd
   const parts = fullName.split(' ');
 
   if (parts.length >= 3) {
-    // Format: "मंगेश रामदास बधाले" -> last="बधाले", first="मंगेश", middle="रामदास"
     return {
-      last: parts[parts.length - 1], // Last part is surname
-      first: parts[0], // First part is first name
-      middle: parts.slice(1, parts.length - 1).join(' ') // Middle parts
+      last: parts[parts.length - 1],
+      first: parts[0],
+      middle: parts.slice(1, parts.length - 1).join(' ')
     };
   } else if (parts.length === 2) {
-    // Format: "मंगेश बधाले" -> last="बधाले", first="मंगेश", middle=""
     return {
       last: parts[1],
       first: parts[0],
       middle: ''
     };
   } else {
-    // Single name
     return {
       last: parts[0] || '',
       first: parts[0] || '',
@@ -80,82 +77,140 @@ const parseMarathiName = (fullName: string): { last: string; first: string; midd
   }
 };
 
-// Check if search is likely a Voter ID (alphanumeric with pattern)
+// Check if search is likely a Voter ID
 const isVoterIdSearch = (text: string): boolean => {
   const trimmed = text.trim();
   const voterIdPattern = /^[A-Z0-9]{6,12}$/i;
   return voterIdPattern.test(trimmed);
 };
 
-// Generate search keys in hierarchical order
-const generateSearchKeys = (firstName: string, middleName: string, lastName: string): string[] => {
-  const keys: string[] = [];
-
+// Determine search strategy based on field values
+const determineSearchStrategy = (firstName: string, middleName: string, lastName: string): {
+  index: string;
+  key: string;
+  strategy: string;
+} | null => {
   // Clean and transliterate inputs
   const first = transliterateToMarathi(firstName.trim());
   const middle = transliterateToMarathi(middleName.trim());
   const last = transliterateToMarathi(lastName.trim());
 
-  // Only generate keys for non-empty fields
+  // All three fields provided - use exact match (name_index)
   if (first && middle && last) {
-    // Priority 1: Exact full name (last_first_middle) - matches name_index structure
-    keys.push(`${last}_${first}_${middle}`);
+    return {
+      index: 'name_index',
+      key: `${last}_${first}_${middle}`,
+      strategy: 'Exact match (Last_First_Middle)'
+    };
   }
 
-  if (first && last) {
-    // Priority 2: First_Last combination - matches name_index_first_last structure
-    keys.push(`${first}_${last}`);
+  // First and Last name provided - use name_index_first_last
+  if (first && last && !middle) {
+    return {
+      index: 'name_index_first_last',
+      key: `${first}_${last}`,
+      strategy: 'First + Last name'
+    };
   }
 
-  if (last) {
-    // Priority 3: Last name only - matches name_index_last structure
-    keys.push(last);
+  // First and Middle name provided - use name_index_first_middle
+  if (first && middle && !last) {
+    return {
+      index: 'name_index_first_middle',
+      key: `${first}_${middle}`,
+      strategy: 'First + Middle name'
+    };
   }
 
-  return keys;
+  // Only Last name provided - use name_index_last
+  if (last && !first && !middle) {
+    return {
+      index: 'name_index_last',
+      key: last,
+      strategy: 'Last name only'
+    };
+  }
+
+  // Only First name provided - use name_index_first
+  if (first && !middle && !last) {
+    return {
+      index: 'name_index_first',
+      key: first,
+      strategy: 'First name only'
+    };
+  }
+
+  // Only Middle name provided - use name_index_middle
+  if (middle && !first && !last) {
+    return {
+      index: 'name_index_middle',
+      key: middle,
+      strategy: 'Middle name only'
+    };
+  }
+
+  // If only first and middle provided but no last, still use first_middle
+  if (first && middle) {
+    return {
+      index: 'name_index_first_middle',
+      key: `${first}_${middle}`,
+      strategy: 'First + Middle name'
+    };
+  }
+
+  // No valid combination found
+  return null;
 };
 
-// Search using hierarchical index approach
 const searchByNameInIndex = async (
   firstName: string,
   middleName: string,
   lastName: string
 ): Promise<string[]> => {
   try {
-    const searchKeys = generateSearchKeys(firstName, middleName, lastName);
-    const voterIds = new Set<string>();
+    console.log('🔍 Starting optimized name search with parameters:');
+    console.log('  First Name:', firstName);
+    console.log('  Middle Name:', middleName);
+    console.log('  Last Name:', lastName);
 
-    // Search in hierarchical order based on database structure
-    const searchHierarchy = [
-      { index: 'name_index', priority: 1 }, // Exact match: "मंगेश_रामदास_बधाले"
-      { index: 'name_index_first_last', priority: 2 }, // First+Last: "मंगेश_बधाले"
-      { index: 'name_index_last', priority: 3 } // Last only: "बधाले"
-    ];
-
-    for (const { index } of searchHierarchy) {
-      for (const key of searchKeys) {
-        try {
-          const indexRef = ref(db, `${index}/${key}`);
-          const snapshot = await get(indexRef);
-
-          if (snapshot.exists()) {
-            const indexData: IndexEntry = snapshot.val();
-            Object.keys(indexData).forEach(id => voterIds.add(id));
-
-            // If we found results in name_index (exact match), we can return early
-            if (index === 'name_index' && voterIds.size > 0) {
-              return Array.from(voterIds);
-            }
-          }
-        } catch (error) {
-          console.error(`Error searching index ${index} for key ${key}:`, error);
-        }
-      }
+    // Determine the optimal search strategy
+    const strategy = determineSearchStrategy(firstName, middleName, lastName);
+    
+    if (!strategy) {
+      console.log('❌ No valid search strategy determined');
+      return [];
     }
 
-    return Array.from(voterIds);
+    console.log(`🎯 Using strategy: ${strategy.strategy}`);
+    console.log(`   Index: ${strategy.index}, Key: ${strategy.key}`);
+
+    // Perform single index search based on strategy
+    const indexRef = ref(db, `${strategy.index}/${strategy.key}`);
+    const snapshot = await get(indexRef);
+
+    if (snapshot.exists()) {
+      const indexData: IndexEntry = snapshot.val();
+      const voterIds = Object.keys(indexData);
+      
+      console.log(`✅ Found ${voterIds.length} records`);
+      console.log('--- Search Summary ---');
+      console.log(`Strategy: ${strategy.strategy}`);
+      console.log(`Index: ${strategy.index}`);
+      console.log(`Key: ${strategy.key}`);
+      console.log(`Total records found: ${voterIds.length}`);
+      
+      return voterIds;
+    } else {
+      console.log('❌ No records found for the selected strategy');
+      console.log('--- Search Summary ---');
+      console.log(`Strategy: ${strategy.strategy}`);
+      console.log(`Index: ${strategy.index}`);
+      console.log(`Key: ${strategy.key}`);
+      console.log(`Total records found: 0`);
+      return [];
+    }
   } catch (error) {
-    console.error('Error searching name index:', error);
+    console.error('🔥 Error searching name index:', error);
     return [];
   }
 };
@@ -265,7 +320,7 @@ const performSearch = async (formData: SearchFormData): Promise<SearchResult[]> 
       return await searchByVoterId(voterId.trim().toUpperCase());
     }
 
-    // Name search
+    // Name search - any combination is allowed
     if (firstName || middleName || lastName) {
       const voterIds = await searchByNameInIndex(firstName, middleName, lastName);
       if (voterIds.length === 0) {
@@ -318,7 +373,6 @@ EPIC ID: ${voter.id}
 const shareVoterDetails = (voter: VoterWithParsedName & { id: string }) => {
   const shareText = generateShareText(voter);
 
-  // Check if Web Share API is available (mobile devices)
   if (navigator.share) {
     navigator.share({
       title: `मतदार माहिती: ${voter.full_name}`,
@@ -327,11 +381,9 @@ const shareVoterDetails = (voter: VoterWithParsedName & { id: string }) => {
       .then(() => console.log('शेयर यशस्वी!'))
       .catch((error) => {
         console.error('शेयर त्रुटी:', error);
-        // Fallback to copying to clipboard
         copyToClipboard(shareText);
       });
   } else {
-    // Fallback for desktop - copy to clipboard
     copyToClipboard(shareText);
   }
 };
@@ -339,7 +391,6 @@ const shareVoterDetails = (voter: VoterWithParsedName & { id: string }) => {
 // Download voter slip as image
 const downloadVoterSlip = async (voter: VoterWithParsedName & { id: string }) => {
   try {
-    // Create a container for the voter slip
     const container = document.createElement('div');
     container.style.position = 'fixed';
     container.style.left = '-10000px';
@@ -351,13 +402,10 @@ const downloadVoterSlip = async (voter: VoterWithParsedName & { id: string }) =>
     container.style.fontFamily = "'Noto Sans Devanagari', 'Arial Unicode MS', Arial, sans-serif";
     container.style.color = '#333';
 
-    // Get the full URL for banner image
     const bannerUrl = `/banner.jpeg`;
 
-    // Add content to container
     container.innerHTML = `
       <div style="text-align: center; margin-bottom: 25px;">
-        <!-- Banner Image -->
         <img src="${bannerUrl}" alt="मतदार यादीत नाव शोधा - इंदोरी वराळे जिल्हा परिषद पंचायत गट" 
              style="width: 100%; height: 270px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;"
              crossOrigin="anonymous">
@@ -394,9 +442,9 @@ const downloadVoterSlip = async (voter: VoterWithParsedName & { id: string }) =>
                 ${voter.age} वर्ष
               </span>
             </p>
-<p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">गण:</strong> <span style="font-size: 20px;">${voter.gan}</span></p>
-<p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">गण:</strong> <span style="font-size: 20px;">${voter.gan_full}</span></p>
-<p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">गट:</strong> <span style="font-size: 20px;">${voter.gat}</span></p>
+            <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">गण:</strong> <span style="font-size: 20px;">${voter.gan}</span></p>
+            <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">गण:</strong> <span style="font-size: 20px;">${voter.gan_full}</span></p>
+            <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">गट:</strong> <span style="font-size: 20px;">${voter.gat}</span></p>
             <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">अनु. क्र.:</strong> 
               <span style="color: #92400e; font-size: 20px; font-weight: bold;">
                 ${voter.serial_number}
@@ -429,23 +477,18 @@ const downloadVoterSlip = async (voter: VoterWithParsedName & { id: string }) =>
       </div>
     `;
 
-    // Add container to document
     document.body.appendChild(container);
 
-    // Wait for image to load
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Use html2canvas to capture the container as an image
     const canvas = await html2canvas(container, {
       backgroundColor: '#ffffff',
       useCORS: true,
       logging: false,
     });
 
-    // Convert canvas to image URL
     const imageUrl = canvas.toDataURL('image/png', 1.0);
 
-    // Create download link
     const link = document.createElement('a');
     link.href = imageUrl;
     link.download = `voter_slip_${voter.id}_${Date.now()}.png`;
@@ -453,10 +496,8 @@ const downloadVoterSlip = async (voter: VoterWithParsedName & { id: string }) =>
     link.click();
     document.body.removeChild(link);
 
-    // Clean up
     document.body.removeChild(container);
 
-    // Show success message
     alert('मतदार स्लिप डाऊनलोड होत आहे...');
 
   } catch (error) {
@@ -826,10 +867,10 @@ const Dashboard: React.FC = () => {
   const handleSearch = useCallback(async () => {
     const { firstName, middleName, lastName, voterId } = formData;
 
-    // For name search: require all three fields
+    // For name search: require at least one name field
     if (activeTab === 'name') {
-      if (!firstName || !lastName) {
-        alert('कृपया किमान पहिले नाव आणि आडनाव भरा');
+      if (!firstName && !middleName && !lastName) {
+        alert('कृपया किमान एक नावाचे फील्ड भरा');
         return;
       }
     }
@@ -861,8 +902,13 @@ const Dashboard: React.FC = () => {
       let searchMethod = '';
       if (voterId) {
         searchMethod = 'EPIC ID शोध';
-      } else if (firstName && lastName) {
-        searchMethod = 'नाव शोध';
+      } else {
+        const usedFields = [];
+        if (firstName) usedFields.push('पहिले नाव');
+        if (middleName) usedFields.push('मधले नाव');
+        if (lastName) usedFields.push('आडनाव');
+        
+        searchMethod = `${usedFields.join(' + ')} ने शोध`;
       }
 
       setSearchStats({
@@ -921,7 +967,6 @@ const Dashboard: React.FC = () => {
           <div className="mb-6">
             <div className="border-b border-gray-200">
               <nav className="-mb-px flex space-x-8">
-
                 <button
                   onClick={() => setActiveTab('epic')}
                   className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'epic'
@@ -960,7 +1005,7 @@ const Dashboard: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                 <div>
                   <label htmlFor="first-name" className="block text-sm font-medium text-gray-700 mb-1">
-                    पहिले नाव *
+                    पहिले नाव
                   </label>
                   <input
                     id="first-name"
@@ -998,7 +1043,7 @@ const Dashboard: React.FC = () => {
 
                 <div>
                   <label htmlFor="last-name" className="block text-sm font-medium text-gray-700 mb-1">
-                    आडनाव *
+                    आडनाव
                   </label>
                   <input
                     id="last-name"
@@ -1019,8 +1064,8 @@ const Dashboard: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={handleSearch}
-                  disabled={isLoading || !formData.firstName || !formData.lastName}
-                  className={`flex-1 py-3 px-6 rounded-lg font-medium transition-colors ${isLoading || !formData.firstName || !formData.lastName
+                  disabled={isLoading}
+                  className={`flex-1 py-3 px-6 rounded-lg font-medium transition-colors ${isLoading
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                     }`}
