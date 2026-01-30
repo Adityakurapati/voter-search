@@ -16,6 +16,9 @@ interface VoterData {
   booth_number: string;
   village: string;
   prabhag_number: string;
+  gan: string;           // Add this field
+  gan_full: string;      // Add this field
+  gat: string;           // Add this field
 }
 
 interface VoterWithParsedName extends VoterData {
@@ -52,7 +55,7 @@ interface SearchFormData {
 // Parse Marathi name into parts
 const parseMarathiName = (fullName: string): { last: string; first: string; middle: string } => {
   const parts = fullName.split(' ');
-  
+
   if (parts.length >= 3) {
     // Format: "मंगेश रामदास बधाले" -> last="बधाले", first="मंगेश", middle="रामदास"
     return {
@@ -160,12 +163,12 @@ const searchByNameInIndex = async (
 // Process voter data to match expected format
 const processVoterData = (id: string, voterData: VoterData): VoterWithParsedName => {
   const nameParts = parseMarathiName(voterData.name);
-  
+
   return {
     ...voterData,
     name_parts: nameParts,
     full_name: voterData.name,
-    reference: `मतदार क्र. ${voterData.serial_number}, मतदार केंद्र: ${voterData.booth_center}, बूथ: ${voterData.booth_number}, गाव: ${voterData.village}, प्रभाग: ${voterData.prabhag_number}`
+    reference: `मतदार क्र. ${voterData.serial_number}, मतदार केंद्र: ${voterData.booth_center}, बूथ: ${voterData.booth_number}, गाव: ${voterData.village}, प्रभाग: ${voterData.prabhag_number}, गण: ${voterData.gan}, गट: ${voterData.gat}`
   };
 };
 
@@ -293,6 +296,9 @@ const copyToClipboard = (text: string) => {
 // Generate share text in the required format
 const generateShareText = (voter: VoterWithParsedName & { id: string }): string => {
   return `नाव: ${voter.full_name}
+  गण: ${voter.gan}
+गण: ${voter.gan_full}
+गट: ${voter.gat}
 वय: ${voter.age}
 EPIC ID: ${voter.id}
 प्रभाग-भाग क्र.: ${voter.prabhag_number}
@@ -388,6 +394,11 @@ const downloadVoterSlip = async (voter: VoterWithParsedName & { id: string }) =>
                 ${voter.age} वर्ष
               </span>
             </p>
+
+            // In the container.innerHTML section, add after the village field:
+<p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">गण:</strong> <span style="font-size: 20px;">${voter.gan}</span></p>
+<p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">गण:</strong> <span style="font-size: 20px;">${voter.gan_full}</span></p>
+<p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">गट:</strong> <span style="font-size: 20px;">${voter.gat}</span></p>
             <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">अनु. क्र.:</strong> 
               <span style="color: #92400e; font-size: 20px; font-weight: bold;">
                 ${voter.serial_number}
@@ -556,6 +567,25 @@ const VoterModal: React.FC<VoterModalProps> = ({ voter, onClose }) => {
                   {voter.serial_number}
                 </span>
               </div>
+              <div>
+                <span className="font-medium text-gray-700 block mb-1">गण:</span>
+                <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-bold">
+                  {voter.gan}
+                </span>
+              </div>
+              <div>
+                <span className="font-medium text-gray-700 block mb-1">गण:</span>
+                <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-bold">
+                  {voter.gan_full}
+                </span>
+              </div>
+              <div>
+                <span className="font-medium text-gray-700 block mb-1">गट:</span>
+                <span className="px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-bold">
+                  {voter.gat}
+                </span>
+              </div>
+
 
               <div>
                 <span className="font-medium text-gray-700 block mb-1">प्रभाग-भाग क्र.:</span>
@@ -893,7 +923,7 @@ const Dashboard: React.FC = () => {
           <div className="mb-6">
             <div className="border-b border-gray-200">
               <nav className="-mb-px flex space-x-8">
-                
+
                 <button
                   onClick={() => setActiveTab('epic')}
                   className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'epic'
