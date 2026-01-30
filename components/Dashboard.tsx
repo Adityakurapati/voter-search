@@ -8,16 +8,24 @@ import { containsMarathi, transliterateToMarathi } from '@/lib/transliterate';
 
 // Types
 interface VoterData {
-  full_name: string;
+  name: string;
+  gender: string;
+  age: number;
+  serial_number: number;
+  booth_center: string;
+  booth_number: string;
+  village: string;
+  prabhag_number: string;
+}
+
+interface VoterWithParsedName extends VoterData {
   name_parts: {
     last: string;
     first: string;
     middle: string;
   };
-  gender: string;
-  age: number;
+  full_name: string;
   reference: string;
-  serial_no?: number; // Optional field
 }
 
 interface IndexEntry {
@@ -26,11 +34,11 @@ interface IndexEntry {
 
 interface SearchResult {
   id: string;
-  data: VoterData;
+  data: VoterWithParsedName;
 }
 
 interface VoterModalProps {
-  voter: VoterData & { id: string };
+  voter: VoterWithParsedName & { id: string };
   onClose: () => void;
 }
 
@@ -40,6 +48,34 @@ interface SearchFormData {
   lastName: string;
   voterId: string;
 }
+
+// Parse Marathi name into parts
+const parseMarathiName = (fullName: string): { last: string; first: string; middle: string } => {
+  const parts = fullName.split(' ');
+  
+  if (parts.length >= 3) {
+    // Format: "मंगेश रामदास बधाले" -> last="बधाले", first="मंगेश", middle="रामदास"
+    return {
+      last: parts[parts.length - 1], // Last part is surname
+      first: parts[0], // First part is first name
+      middle: parts.slice(1, parts.length - 1).join(' ') // Middle parts
+    };
+  } else if (parts.length === 2) {
+    // Format: "मंगेश बधाले" -> last="बधाले", first="मंगेश", middle=""
+    return {
+      last: parts[1],
+      first: parts[0],
+      middle: ''
+    };
+  } else {
+    // Single name
+    return {
+      last: parts[0] || '',
+      first: parts[0] || '',
+      middle: ''
+    };
+  }
+};
 
 // Check if search is likely a Voter ID (alphanumeric with pattern)
 const isVoterIdSearch = (text: string): boolean => {
@@ -59,33 +95,18 @@ const generateSearchKeys = (firstName: string, middleName: string, lastName: str
 
   // Only generate keys for non-empty fields
   if (first && middle && last) {
-    // Priority 1: Exact full name (last_first_middle)
+    // Priority 1: Exact full name (last_first_middle) - matches name_index structure
     keys.push(`${last}_${first}_${middle}`);
   }
 
   if (first && last) {
-    // Priority 2: Last_First combination
-    keys.push(`${last}_${first}`);
-  }
-
-  if (first && middle) {
-    // Priority 3: First_Middle combination
-    keys.push(`${first}_${middle}`);
+    // Priority 2: First_Last combination - matches name_index_first_last structure
+    keys.push(`${first}_${last}`);
   }
 
   if (last) {
-    // Priority 4: Last name only
+    // Priority 3: Last name only - matches name_index_last structure
     keys.push(last);
-  }
-
-  if (first) {
-    // Priority 5: First name only
-    keys.push(first);
-  }
-
-  if (middle) {
-    // Priority 6: Middle name only
-    keys.push(middle);
   }
 
   return keys;
@@ -101,27 +122,30 @@ const searchByNameInIndex = async (
     const searchKeys = generateSearchKeys(firstName, middleName, lastName);
     const voterIds = new Set<string>();
 
-    // Define search hierarchy - search in order until we find results
-    const indexes = ['name_index', 'name_index_last_first', 'name_index_last'];
+    // Search in hierarchical order based on database structure
+    const searchHierarchy = [
+      { index: 'name_index', priority: 1 }, // Exact match: "मंगेश_रामदास_बधाले"
+      { index: 'name_index_first_last', priority: 2 }, // First+Last: "मंगेश_बधाले"
+      { index: 'name_index_last', priority: 3 } // Last only: "बधाले"
+    ];
 
-    for (const indexName of indexes) {
+    for (const { index } of searchHierarchy) {
       for (const key of searchKeys) {
         try {
-          const indexRef = ref(db, `${indexName}/${key}`);
+          const indexRef = ref(db, `${index}/${key}`);
           const snapshot = await get(indexRef);
 
           if (snapshot.exists()) {
             const indexData: IndexEntry = snapshot.val();
             Object.keys(indexData).forEach(id => voterIds.add(id));
 
-            // If we found results in a more specific index, stop searching
-            // Example: if we found in name_index (exact match), don't search broader indexes
-            if (indexName === 'name_index' && voterIds.size > 0) {
+            // If we found results in name_index (exact match), we can return early
+            if (index === 'name_index' && voterIds.size > 0) {
               return Array.from(voterIds);
             }
           }
         } catch (error) {
-          console.error(`Error searching index ${indexName} for key ${key}:`, error);
+          console.error(`Error searching index ${index} for key ${key}:`, error);
         }
       }
     }
@@ -131,6 +155,18 @@ const searchByNameInIndex = async (
     console.error('Error searching name index:', error);
     return [];
   }
+};
+
+// Process voter data to match expected format
+const processVoterData = (id: string, voterData: VoterData): VoterWithParsedName => {
+  const nameParts = parseMarathiName(voterData.name);
+  
+  return {
+    ...voterData,
+    name_parts: nameParts,
+    full_name: voterData.name,
+    reference: `मतदार क्र. ${voterData.serial_number}, मतदार केंद्र: ${voterData.booth_center}, बूथ: ${voterData.booth_number}, गाव: ${voterData.village}, प्रभाग: ${voterData.prabhag_number}`
+  };
 };
 
 // Get voter details by IDs
@@ -147,9 +183,10 @@ const getVotersByIds = async (voterIds: string[]): Promise<SearchResult[]> => {
         const snapshot = await get(voterRef);
 
         if (snapshot.exists()) {
+          const voterData = snapshot.val() as VoterData;
           return {
             id,
-            data: snapshot.val() as VoterData
+            data: processVoterData(id, voterData)
           };
         }
       } catch (error) {
@@ -175,9 +212,10 @@ const searchByVoterId = async (voterId: string): Promise<SearchResult[]> => {
     const exactSnapshot = await get(exactVoterRef);
 
     if (exactSnapshot.exists()) {
+      const voterData = exactSnapshot.val() as VoterData;
       return [{
         id: voterId,
-        data: exactSnapshot.val() as VoterData
+        data: processVoterData(voterId, voterData)
       }];
     }
 
@@ -197,7 +235,7 @@ const searchByVoterId = async (voterId: string): Promise<SearchResult[]> => {
       if (id.toLowerCase().includes(searchLower)) {
         results.push({
           id,
-          data: voterData as VoterData
+          data: processVoterData(id, voterData as VoterData)
         });
       }
     });
@@ -253,17 +291,15 @@ const copyToClipboard = (text: string) => {
 };
 
 // Generate share text in the required format
-const generateShareText = (voter: VoterData & { id: string }): string => {
-  // Use serial_no if available, otherwise extract from reference
-  const voterNumber = voter.serial_no ? voter.serial_no.toString() :
-    (voter.reference ? voter.reference.match(/(\d+)/)?.[0] || 'NA' : 'NA');
-
+const generateShareText = (voter: VoterWithParsedName & { id: string }): string => {
   return `नाव: ${voter.full_name}
 वय: ${voter.age}
 EPIC ID: ${voter.id}
-प्रभाग-भाग क्र.: NA
-अनु. क्र.: ${voterNumber}
-मतदान केंद्र: NA
+प्रभाग-भाग क्र.: ${voter.prabhag_number}
+अनु. क्र.: ${voter.serial_number}
+मतदान केंद्र: ${voter.booth_center}
+बूथ क्रमांक: ${voter.booth_number}
+गाव: ${voter.village}
 मतदानाची तारीख व वेळ : ५ फेब्रुवारी २०२६ रोजी सकाळी ७.३० ते सायंकाळी ५.३०
 
 आपली नम्र: *सौ.मेघाताई प्रशांतदादा भागवत*
@@ -273,7 +309,7 @@ EPIC ID: ${voter.id}
 };
 
 // Share voter details function
-const shareVoterDetails = (voter: VoterData & { id: string }) => {
+const shareVoterDetails = (voter: VoterWithParsedName & { id: string }) => {
   const shareText = generateShareText(voter);
 
   // Check if Web Share API is available (mobile devices)
@@ -295,11 +331,7 @@ const shareVoterDetails = (voter: VoterData & { id: string }) => {
 };
 
 // Download voter slip as image
-const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
-  // Use serial_no if available, otherwise extract from reference
-  const voterNumber = voter.serial_no ? voter.serial_no.toString() :
-    (voter.reference ? voter.reference.match(/(\d+)/)?.[0] || 'NA' : 'NA');
-
+const downloadVoterSlip = async (voter: VoterWithParsedName & { id: string }) => {
   try {
     // Create a container for the voter slip
     const container = document.createElement('div');
@@ -337,18 +369,17 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
             <h2 style="color: #1e40af; margin: 0 0 5px 0; font-size: 24px; font-weight: bold;">मतदार तपशील</h2>
             <p style="color: #6b7280; margin: 0; font-size: 18px;">Voter Information Details</p>
           </div>
-<div style="background: linear-gradient(135deg, #1e40af, #3b82f6); color: white; padding: 8px 20px; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); line-height: 1.5;">
-  EPIC ID: ${voter.id}
-</div> 
+          <div style="background: linear-gradient(135deg, #1e40af, #3b82f6); color: white; padding: 8px 20px; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); line-height: 1.5;">
+            EPIC ID: ${voter.id}
+          </div>
         </div>
-        
         
         <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 20px;">
           <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
             <h3 style="color: #374151; margin: 0 0 15px 0; font-size: 22px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">नावाचे तपशील</h3>
             <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">पूर्ण नाव:</strong> <span style="color: #111827; font-weight: bold; font-size: 20px;">${voter.full_name}</span></p>
             <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">लिंग:</strong> 
-              <span style="color: ${voter.gender === 'पुरुष' ? '#1e40af' : '#be185d'}; font-size: 20px;">
+              <span style="color: ${voter.gender === 'पुरूष' ? '#1e40af' : '#be185d'}; font-size: 20px;">
                 ${voter.gender}
               </span>
             </p>
@@ -359,19 +390,23 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
             </p>
             <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">अनु. क्र.:</strong> 
               <span style="color: #92400e; font-size: 20px; font-weight: bold;">
-                ${voterNumber}
+                ${voter.serial_number}
               </span>
             </p>
-           
-            <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">प्रभाग-भाग क्र.:</strong> <span style="font-size: 20px;">NA</span></p>
+            <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">प्रभाग-भाग क्र.:</strong> 
+              <span style="color: #1e40af; font-size: 20px; font-weight: bold;">
+                ${voter.prabhag_number}
+              </span>
+            </p>
           </div>
         </div>
         
         <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
           <h3 style="color: #374151; margin: 0 0 15px 0; font-size: 22px; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">मतदान केंद्र माहिती</h3>
-          <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">मतदान केंद्र:</strong> <span style="font-size: 20px;">NA</span></p>
+          <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">मतदान केंद्र:</strong> <span style="font-size: 18px;">${voter.booth_center}</span></p>
+          <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">बूथ क्रमांक:</strong> <span style="font-size: 20px;">${voter.booth_number}</span></p>
+          <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">गाव:</strong> <span style="font-size: 20px;">${voter.village}</span></p>
           <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">मतदानाची तारीख व वेळ:</strong> <span style="font-size: 18px;">५ फेब्रुवारी २०२६ रोजी सकाळी ७.३० ते सायंकाळी ५.३०</span></p>
-          <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">संदर्भ:</strong> <span style="font-size: 20px;">${voter.reference}</span></p>
         </div>
       </div>
       
@@ -383,7 +418,6 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
           सौ.मेघाताई प्रशांतदादा भागवत
         </p>
       </div>
-     
     `;
 
     // Add container to document
@@ -394,10 +428,9 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
 
     // Use html2canvas to capture the container as an image
     const canvas = await html2canvas(container, {
-      backgroundColor: '#ffffff', // Note: it's backgroundColor, not background
+      backgroundColor: '#ffffff',
       useCORS: true,
       logging: false,
-
     });
 
     // Convert canvas to image URL
@@ -424,7 +457,7 @@ const downloadVoterSlip = async (voter: VoterData & { id: string }) => {
 };
 
 // Share via specific app
-const shareViaApp = (voter: VoterData & { id: string }, app: 'whatsapp' | 'telegram' | 'sms' | 'email') => {
+const shareViaApp = (voter: VoterWithParsedName & { id: string }, app: 'whatsapp' | 'telegram' | 'sms' | 'email') => {
   const voterInfo = generateShareText(voter);
   const encodedText = encodeURIComponent(voterInfo);
 
@@ -502,7 +535,7 @@ const VoterModal: React.FC<VoterModalProps> = ({ voter, onClose }) => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <span className="font-medium text-gray-700 block mb-1">लिंग:</span>
-                <span className={`px-3 py-1 rounded-full text-sm ${voter.gender === 'पुरुष'
+                <span className={`px-3 py-1 rounded-full text-sm ${voter.gender === 'पुरूष'
                   ? 'bg-blue-100 text-blue-800'
                   : 'bg-pink-100 text-pink-800'
                   }`}>
@@ -516,35 +549,47 @@ const VoterModal: React.FC<VoterModalProps> = ({ voter, onClose }) => {
                   {voter.age} वर्ष
                 </span>
               </div>
-              <div>
-                <span className="font-medium text-gray-700 block mb-1">प्रभाग-भाग क्र.:</span>
-                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                NA
-                </span>
-              </div>
+
               <div>
                 <span className="font-medium text-gray-700 block mb-1">अनु. क्र.:</span>
-                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                  {voter.serial_no || 'NA'}
+                <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-bold">
+                  {voter.serial_number}
                 </span>
               </div>
-             
+
+              <div>
+                <span className="font-medium text-gray-700 block mb-1">प्रभाग-भाग क्र.:</span>
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+                  {voter.prabhag_number}
+                </span>
+              </div>
             </div>
 
-             <div>
-                <span className="font-medium text-gray-700 block mb-1">मतदानाची तारीख व वेळ:</span>
-                <span className="col-span-2 py-1 text-green-800 rounded-full text-[16px]">
-                  ५ फेब्रुवारी २०२६ रोजी स. ७.३० ते सा. ५.३०
-                </span>
-              </div>
+            <div>
+              <span className="font-medium text-gray-700 block mb-1">मतदानाची तारीख व वेळ:</span>
+              <span className="col-span-2 py-1 text-green-800 rounded-full text-[16px]">
+                ५ फेब्रुवारी २०२६ रोजी स. ७.३० ते सा. ५.३०
+              </span>
+            </div>
 
             <div>
-              <span className="font-medium text-gray-700 block mb-1">मतदान केंद्र: NA</span>
+              <span className="font-medium text-gray-700 block mb-1">मतदान केंद्र:</span>
+              <span className="text-gray-900">{voter.booth_center}</span>
+            </div>
+
+            <div>
+              <span className="font-medium text-gray-700 block mb-1">बूथ क्रमांक:</span>
+              <span className="text-gray-900">{voter.booth_number}</span>
+            </div>
+
+            <div>
+              <span className="font-medium text-gray-700 block mb-1">गाव:</span>
+              <span className="text-gray-900">{voter.village}</span>
             </div>
 
             <div>
               <span className="font-medium text-gray-700 block mb-1">संदर्भ:</span>
-              <span className="text-gray-900 bg-gray-50 p-3 rounded-lg block">
+              <span className="text-gray-900 bg-gray-50 p-3 rounded-lg block text-sm">
                 {voter.reference}
               </span>
             </div>
@@ -755,8 +800,8 @@ const Dashboard: React.FC = () => {
 
     // For name search: require all three fields
     if (activeTab === 'name') {
-      if (!firstName || !middleName || !lastName) {
-        alert('कृपया तिन्ही नावाची फील्ड भरा');
+      if (!firstName || !lastName) {
+        alert('कृपया किमान पहिले नाव आणि आडनाव भरा');
         return;
       }
     }
@@ -788,8 +833,8 @@ const Dashboard: React.FC = () => {
       let searchMethod = '';
       if (voterId) {
         searchMethod = 'EPIC ID शोध';
-      } else if (firstName && middleName && lastName) {
-        searchMethod = 'पूर्ण नाव (आडनाव_पहिले_मधले)';
+      } else if (firstName && lastName) {
+        searchMethod = 'नाव शोध';
       }
 
       setSearchStats({
@@ -906,7 +951,7 @@ const Dashboard: React.FC = () => {
 
                 <div>
                   <label htmlFor="middle-name" className="block text-sm font-medium text-gray-700 mb-1">
-                    मधले नाव (वडिलांचे/पतीचे) *
+                    मधले नाव (वडिलांचे/पतीचे)
                   </label>
                   <input
                     id="middle-name"
@@ -920,7 +965,7 @@ const Dashboard: React.FC = () => {
                   {transliterationHints.middleName && (
                     <p className="text-xs text-green-600 mt-1">{transliterationHints.middleName}</p>
                   )}
-                  <p className="text-xs text-gray-500 mt-1">(वडिलांचे/पतीचे नाव)</p>
+                  <p className="text-xs text-gray-500 mt-1">(वडिलांचे/पतीचे नाव - वैकल्पिक)</p>
                 </div>
 
                 <div>
@@ -946,8 +991,8 @@ const Dashboard: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={handleSearch}
-                  disabled={isLoading || !formData.firstName || !formData.middleName || !formData.lastName}
-                  className={`flex-1 py-3 px-6 rounded-lg font-medium transition-colors ${isLoading || !formData.firstName || !formData.middleName || !formData.lastName
+                  disabled={isLoading || !formData.firstName || !formData.lastName}
+                  className={`flex-1 py-3 px-6 rounded-lg font-medium transition-colors ${isLoading || !formData.firstName || !formData.lastName
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                     }`}
@@ -1078,7 +1123,7 @@ const Dashboard: React.FC = () => {
                             <div className="font-medium text-gray-800 text-lg">
                               {result.data.full_name}
                             </div>
-                            <span className={`px-2 py-0.5 rounded-full text-xs ${result.data.gender === 'पुरुष'
+                            <span className={`px-2 py-0.5 rounded-full text-xs ${result.data.gender === 'पुरूष'
                               ? 'bg-blue-100 text-blue-800'
                               : 'bg-pink-100 text-pink-800'
                               }`}>
@@ -1087,26 +1132,21 @@ const Dashboard: React.FC = () => {
                             <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs">
                               {result.data.age} वर्ष
                             </span>
-                            {result.data.serial_no && (
-                              <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold">
-                                अनु. क्र.: {result.data.serial_no}
-                              </span>
-                            )}
+                            <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs font-bold">
+                              अनु. क्र.: {result.data.serial_number}
+                            </span>
                           </div>
                           <div className="text-gray-600 text-sm space-y-1">
                             <div className="flex items-center gap-4">
                               <span className="font-mono text-gray-800 bg-gray-100 px-2 py-0.5 rounded">
                                 EPIC: {result.id}
                               </span>
-                              {activeTab === 'epic' && formData.voterId &&
-                                formData.voterId.toUpperCase() === result.id && (
-                                  <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded-full text-xs">
-                                    अचूक ID जुळणी
-                                  </span>
-                                )}
+                              <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-xs">
+                                प्रभाग: {result.data.prabhag_number}
+                              </span>
                             </div>
                             <div className="text-gray-500">
-                              {result.data.reference}
+                              {result.data.booth_center}, बूथ: {result.data.booth_number}, {result.data.village}
                             </div>
                           </div>
                         </div>
