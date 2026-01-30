@@ -296,7 +296,7 @@ const copyToClipboard = (text: string) => {
 // Generate share text in the required format
 const generateShareText = (voter: VoterWithParsedName & { id: string }): string => {
   return `नाव: ${voter.full_name}
-  गण: ${voter.gan}
+गण: ${voter.gan}
 गण: ${voter.gan_full}
 गट: ${voter.gat}
 वय: ${voter.age}
