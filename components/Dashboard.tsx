@@ -394,8 +394,6 @@ const downloadVoterSlip = async (voter: VoterWithParsedName & { id: string }) =>
                 ${voter.age} वर्ष
               </span>
             </p>
-
-            // In the container.innerHTML section, add after the village field:
 <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">गण:</strong> <span style="font-size: 20px;">${voter.gan}</span></p>
 <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">गण:</strong> <span style="font-size: 20px;">${voter.gan_full}</span></p>
 <p style="margin: 10px 0;"><strong style="color: #4b5563; font-size: 20px;">गट:</strong> <span style="font-size: 20px;">${voter.gat}</span></p>
