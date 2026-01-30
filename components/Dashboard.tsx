@@ -1101,7 +1101,7 @@ const Dashboard: React.FC = () => {
                     value={formData.voterId}
                     onChange={(e) => handleInputChange('voterId', e.target.value.toUpperCase())}
                     placeholder="UXM8227381"
-                    className="w-full p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-mono text-lg"
+                    className="w-full text-black p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-mono text-lg"
                     autoComplete="off"
                   />
                   <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
@@ -1111,7 +1111,7 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 mt-1">
-                  संपूर्ण किंवा अंशतः EPIC ID प्रविष्ट करा (उदा: UXM8227381, 8227381, किंवा UXM82)
+                  संपूर्ण किंवा अंशतः EPIC ID प्रविष्ट करा (उदा: UXM1234567, 1234567)
                 </p>
               </div>
 
