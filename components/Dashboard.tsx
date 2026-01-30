@@ -305,7 +305,7 @@ EPIC ID: ${voter.id}
 आपली नम्र: *सौ.मेघाताई प्रशांतदादा भागवत*
 
 
-मतदार यादीत नाव शोधण्याकरिता : https://meghaprashantbhagwat.com/?share=6`;
+मतदार यादीत नाव शोधण्याकरिता : https://meghaprashantbhagwat.com/?share=7`;
 };
 
 // Share voter details function
