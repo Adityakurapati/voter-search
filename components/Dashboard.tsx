@@ -99,7 +99,7 @@ const determineSearchStrategy = (firstName: string, middleName: string, lastName
   if (first && middle && last) {
     return {
       index: 'name_index',
-      key: `${last}_${first}_${middle}`,
+      key: `${first}_${middle}_${last}`,
       strategy: 'Exact match (Last_First_Middle)'
     };
   }
