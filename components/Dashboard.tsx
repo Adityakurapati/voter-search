@@ -1019,7 +1019,7 @@ const Dashboard: React.FC = () => {
                   {/* {transliterationHints.firstName && (
                     <p className="text-xs text-green-600 mt-1">{transliterationHints.firstName}</p>
                   )} */}
-                  <p className="text-xs text-gray-500 mt-1">(मराठी मध्ये प्रविष्ट करा)</p>
+                  <p className="text-sm font-bold text-gray-500 mt-1">(मराठी मध्ये प्रविष्ट करा)</p>
                 </div>
 
                 <div>
@@ -1038,7 +1038,7 @@ const Dashboard: React.FC = () => {
                   {/* {transliterationHints.middleName && (
                     <p className="text-xs text-green-600 mt-1">{transliterationHints.middleName}</p>
                   )} */}
-                  <p className="text-xs text-gray-500 mt-1">(वडिलांचे/पतीचे नाव - वैकल्पिक)</p>
+                  <p className="text-xs text-gray-500 mt-1">(वडिलांचे/पतीचे नाव/ - वैकल्पिक)</p>
                 </div>
 
                 <div>
@@ -1100,7 +1100,7 @@ const Dashboard: React.FC = () => {
                     type="text"
                     value={formData.voterId}
                     onChange={(e) => handleInputChange('voterId', e.target.value.toUpperCase())}
-                    placeholder="UXM8227381"
+                    placeholder="ABC1234567 किंवा 1234567"
                     className="w-full text-black p-3 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 font-mono text-lg"
                     autoComplete="off"
                   />
