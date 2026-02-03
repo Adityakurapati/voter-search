@@ -1038,7 +1038,7 @@ const Dashboard: React.FC = () => {
                   {/* {transliterationHints.middleName && (
                     <p className="text-xs text-green-600 mt-1">{transliterationHints.middleName}</p>
                   )} */}
-                  <p className="text-xs text-gray-500 mt-1">(वडिलांचे/पतीचे नाव/ - वैकल्पिक)</p>
+                  <p className="text-sm font-bold text-gray-500 mt-1">(मराठी मध्ये प्रविष्ट करा)</p>
                 </div>
 
                 <div>
@@ -1057,7 +1057,7 @@ const Dashboard: React.FC = () => {
                   {/* {transliterationHints.lastName && (
                     <p className="text-xs text-green-600 mt-1">{transliterationHints.lastName}</p>
                   )} */}
-                  <p className="text-xs text-gray-500 mt-1">(कुळनाव)</p>
+                  <p className="text-sm font-bold text-gray-500 mt-1">(मराठी मध्ये प्रविष्ट करा)</p>
                 </div>
               </div>
 
